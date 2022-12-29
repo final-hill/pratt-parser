@@ -1,0 +1,31 @@
+{
+    "name": "@final-hill/pratt-parser",
+    "version": "0.1.0",
+    "description": "Top Down Operator Precedence Parser",
+    "module": "dist/index.mjs",
+    "type": "module",
+    "scripts": {
+        "clean": "rimraf dist",
+        "dist": "copyfiles -u 1 src/*.mjs dist",
+        "test": "node --experimental-vm-modules node_modules/jest/bin/jest.js"
+    },
+    "repository": {
+        "type": "git",
+        "url": "git+https://github.com/final-hill/pratt-parser.git"
+    },
+    "author": "Michael L Haufe <michael.haufe@final-hill.com> (https://final-hill.com)",
+    "license": "AGPL-3.0-only",
+    "bugs": {
+        "url": "https://github.com/final-hill/pratt-parser/issues"
+    },
+    "homepage": "https://github.com/final-hill/pratt-parser#readme",
+    "dependencies": {
+        "@mlhaufe/brevity": "github:mlhaufe/brevity#v0.2.2"
+    },
+    "devDependencies": {
+        "@types/jest": "^29.2.4",
+        "copyfiles": "^2.4.1",
+        "jest": "^29.3.1",
+        "rimraf": "^3.0.2"
+    }
+}
