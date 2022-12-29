@@ -20,7 +20,7 @@
     },
     "homepage": "https://github.com/final-hill/pratt-parser#readme",
     "dependencies": {
-        "@mlhaufe/brevity": "github:mlhaufe/brevity#v0.2.2"
+        "@mlhaufe/brevity": "github:mlhaufe/brevity#v0.2.5"
     },
     "devDependencies": {
         "@types/jest": "^29.2.4",

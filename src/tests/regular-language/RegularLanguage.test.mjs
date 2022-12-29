@@ -9,69 +9,69 @@ describe('RegularLanguage', () => {
     const { Alt, Any, Cat, Char, Empty, Nil, Not, Opt, Plus, Range, Rep, Star, Token } = RegularLanguage
 
     test('containsEmpty', () => {
-        expect(containsEmpty(Alt({ left: Char({ value: 'a' }), right: Char({ value: 'b' }) }))).toBe(false)
-        expect(containsEmpty(Alt({ left: Char({ value: 'a' }), right: Empty }))).toBe(true)
-        expect(containsEmpty(Alt({ left: Empty, right: Char({ value: 'a' }) }))).toBe(true)
+        expect(containsEmpty(Alt(Char('a'), Char('b')))).toBe(false)
+        expect(containsEmpty(Alt(Char('a'), Empty))).toBe(true)
+        expect(containsEmpty(Alt(Empty, Char('a')))).toBe(true)
 
         expect(containsEmpty(Any)).toBe(true)
 
-        expect(containsEmpty(Cat({ first: Char({ value: 'a' }), second: Char({ value: 'b' }) }))).toBe(false)
-        expect(containsEmpty(Cat({ first: Empty, second: Empty }))).toBe(true)
-        expect(containsEmpty(Cat({ first: Star({ lang: Char({ value: 'a' }) }), second: Empty }))).toBe(true)
-        expect(containsEmpty(Cat({ first: Empty, second: Any }))).toBe(true)
+        expect(containsEmpty(Cat(Char('a'), Char('b')))).toBe(false)
+        expect(containsEmpty(Cat(Empty, Empty))).toBe(true)
+        expect(containsEmpty(Cat(Star(Char('a')), Empty))).toBe(true)
+        expect(containsEmpty(Cat(Empty, Any))).toBe(true)
 
-        expect(containsEmpty(Char({ value: 'a' }))).toBe(false)
+        expect(containsEmpty(Char('a'))).toBe(false)
         expect(containsEmpty(Empty)).toBe(true)
         expect(containsEmpty(Nil)).toBe(false)
 
-        expect(containsEmpty(Not({ lang: Char({ value: 'a' }) }))).toBe(true)
-        expect(containsEmpty(Not({ lang: Star({ lang: Char({ value: 'a' }) }) }))).toBe(false)
-        expect(containsEmpty(Not({ lang: Any }))).toBe(false)
-        expect(containsEmpty(Not({ lang: Empty }))).toBe(false)
+        expect(containsEmpty(Not(Char('a')))).toBe(true)
+        expect(containsEmpty(Not(Star(Char('a'))))).toBe(false)
+        expect(containsEmpty(Not(Any))).toBe(false)
+        expect(containsEmpty(Not(Empty))).toBe(false)
 
-        expect(containsEmpty(Opt({ lang: Char({ value: 'a' }) }))).toBe(true)
-        expect(containsEmpty(Opt({ lang: Empty }))).toBe(true)
+        expect(containsEmpty(Opt(Char('a')))).toBe(true)
+        expect(containsEmpty(Opt(Empty))).toBe(true)
 
-        expect(containsEmpty(Plus({ lang: Char({ value: 'a' }) }))).toBe(false)
-        expect(containsEmpty(Plus({ lang: Empty }))).toBe(true)
+        expect(containsEmpty(Plus(Char('a')))).toBe(false)
+        expect(containsEmpty(Plus(Empty))).toBe(true)
 
-        expect(containsEmpty(Range({ from: 'a', to: 'b' }))).toBe(false)
+        expect(containsEmpty(Range('a', 'b'))).toBe(false)
 
-        expect(containsEmpty(Rep({ lang: Char({ value: 'a' }), n: 0 }))).toBe(true)
-        expect(containsEmpty(Rep({ lang: Char({ value: 'a' }), n: 1 }))).toBe(false)
+        expect(containsEmpty(Rep(Char('a'), 0))).toBe(true)
+        expect(containsEmpty(Rep(Char('a'), 1))).toBe(false)
 
-        expect(containsEmpty(Star({ lang: Char({ value: 'a' }) }))).toBe(true)
-        expect(containsEmpty(Token({ value: 'a' }))).toBe(false)
+        expect(containsEmpty(Star(Char('a')))).toBe(true)
+        expect(containsEmpty(Token('a'))).toBe(false)
     })
     test('deriv of non char throws', () => {
-        expect(() => deriv(Char({ value: 'a' }), 1)).toThrow()
-        expect(() => deriv(Char({ value: 'a' }), 'a')).not.toThrow()
-        expect(() => deriv(Char({ value: 'a' }), 'abc')).toThrow()
-        expect(() => deriv(Char({ value: 'a' }), true)).toThrow()
-        expect(() => deriv(Char({ value: 'a' }), null)).toThrow()
-        expect(() => deriv(Char({ value: 'a' }), undefined)).toThrow()
-        expect(() => deriv(Char({ value: 'a' }), {})).toThrow()
-        expect(() => deriv(Char({ value: 'a' }), [])).toThrow()
-        expect(() => deriv(Char({ value: 'a' }), () => { })).toThrow()
+        expect(() => deriv(Char('a'), 1)).toThrow()
+        expect(() => deriv(Char('a'), 'a')).not.toThrow()
+        expect(() => deriv(Char('a'), 'abc')).toThrow()
+        expect(() => deriv(Char('a'), true)).toThrow()
+        expect(() => deriv(Char('a'), null)).toThrow()
+        expect(() => deriv(Char('a'), undefined)).toThrow()
+        expect(() => deriv(Char('a'), {})).toThrow()
+        expect(() => deriv(Char('a'), [])).toThrow()
+        expect(() => deriv(Char('a'), () => { })).toThrow()
     })
     test('deriv Alt', () => {
         // Dc(L1 ∪ L2) = Dc(L1) ∪ Dc(L2)
         expect(
             equals(
-                deriv(Alt({ left: Char({ value: 'a' }), right: Char({ value: 'b' }) }), 'a'),
-                Alt({ left: deriv(Char({ value: 'a' }), 'a'), right: deriv(Char({ value: 'b' }), 'a') })
+                deriv(Alt(Char('a'), Char('b')), 'a'),
+                Alt(deriv(Char('a'), 'a'), deriv(Char('b'), 'a'))
             )
         ).toBe(true)
         expect(
             equals(
-                deriv(Alt({ left: Char({ value: 'a' }), right: Char({ value: 'b' }) }), 'b'),
-                Alt({ left: deriv(Char({ value: 'a' }), 'b'), right: deriv(Char({ value: 'b' }), 'b') })
+                deriv(Alt(Char('a'), Char('b')), 'b'),
+                Alt(deriv(Char('a'), 'b'), deriv(Char('b'), 'b'))
             )
         ).toBe(true)
         expect(
             equals(
-                deriv(Alt({ left: Char({ value: 'a' }), right: Char({ value: 'b' }) }), 'c'),
-                Alt({ left: deriv(Char({ value: 'a' }), 'c'), right: deriv(Char({ value: 'b' }), 'c') })
+                deriv(Alt(Char('a'), Char('b')), 'c'),
+                Alt(deriv(Char('a'), 'c'), deriv(Char('b'), 'c'))
             )
         ).toBe(true)
     })
@@ -89,34 +89,34 @@ describe('RegularLanguage', () => {
         //           =  Dc(L1)◦L2 ∪ Dc(L2)  if ε ∈ L1
 
         // Dc(L1◦L2) =  Dc(L1)◦L2
-        const ab = Cat({ first: Char({ value: 'a' }), second: Char({ value: 'b' }) })
+        const ab = Cat(Char('a'), Char('b'))
         expect(
             equals(
                 deriv(ab, 'a'),
-                Cat({ first: deriv(Char({ value: 'a' }), 'a'), second: Char({ value: 'b' }) })
+                Cat(deriv(Char('a'), 'a'), Char('b'))
             )
         ).toBe(true)
         expect(
             equals(
                 deriv(ab, 'b'),
-                Cat({ first: deriv(Char({ value: 'a' }), 'b'), second: Char({ value: 'b' }) })
+                Cat(deriv(Char('a'), 'b'), Char('b'))
             )
         ).toBe(true)
         expect(
             equals(
                 deriv(ab, 'c'),
-                Cat({ first: deriv(Char({ value: 'a' }), 'c'), second: Char({ value: 'b' }) })
+                Cat(deriv(Char('a'), 'c'), Char('b'))
             )
         ).toBe(true)
         // Dc(L1◦L2) =  Dc(L1)◦L2 ∪ Dc(L2)
-        const eb = Cat({ first: Empty, second: Char({ value: 'b' }) })
+        const eb = Cat(Empty, Char('b'))
         expect(
             equals(
                 deriv(eb, 'a'),
-                Alt({
-                    left: Cat({ first: deriv(Empty, 'a'), second: Char({ value: 'b' }) }),
-                    right: deriv(Char({ value: 'b' }), 'a')
-                })
+                Alt(
+                    Cat(deriv(Empty, 'a'), Char('b')),
+                    deriv(Char('b'), 'a')
+                )
             )
         ).toBe(true)
     })
@@ -124,14 +124,14 @@ describe('RegularLanguage', () => {
         // Dc(c) = ε
         expect(
             equals(
-                deriv(Char({ value: 'a' }), 'a'),
+                deriv(Char('a'), 'a'),
                 Empty
             )
         ).toBe(true)
         // Dc(c') = ∅
         expect(
             equals(
-                deriv(Char({ value: 'a' }), 'b'),
+                deriv(Char('a'), 'b'),
                 Nil
             )
         ).toBe(true)
@@ -155,38 +155,38 @@ describe('RegularLanguage', () => {
         ).toBe(true)
     })
     test('deriv Not', () => {
-        const L = Char({ value: 'a' })
+        const L = Char('a')
         // Dc(¬L) = ¬Dc(L)
         expect(
             equals(
-                deriv(Not({ lang: L }), 'a'),
-                Not({ lang: deriv(L, 'a') })
+                deriv(Not(L), 'a'),
+                Not(deriv(L, 'a'))
             )
         ).toBe(true)
         expect(
             equals(
-                deriv(Not({ lang: L }), 'b'),
-                Not({ lang: deriv(L, 'b') })
+                deriv(Not(L), 'b'),
+                Not(deriv(L, 'b'))
             )
         ).toBe(true)
     })
     test('deriv Opt', () => {
         // Dc(L?) = Dc(L ∪ ε)
-        const L = Char({ value: 'a' })
+        const L = Char('a')
         expect(
             equals(
-                deriv(Opt({ lang: L }), 'a'),
-                deriv(Alt({ left: L, right: Empty }), 'a')
+                deriv(Opt(L), 'a'),
+                deriv(Alt(L, Empty), 'a')
             )
         ).toBe(true)
     })
     test('deriv Plus', () => {
-        const L = Char({ value: 'a' })
+        const L = Char('a')
         // Dc(L+) = Dc(L)◦L*
         expect(
             equals(
-                deriv(Plus({ lang: L }), 'a'),
-                Cat({ first: deriv(L, 'a'), second: Star({ lang: L }) })
+                deriv(Plus(L), 'a'),
+                Cat(deriv(L, 'a'), Star(L))
             )
         ).toBe(true)
     })
@@ -194,34 +194,34 @@ describe('RegularLanguage', () => {
         // Dc([c-c]) = Dc(c)
         expect(
             equals(
-                deriv(Range({ from: 'a', to: 'a' }), 'a'),
-                deriv(Char({ value: 'a' }), 'a')
+                deriv(Range('a', 'a'), 'a'),
+                deriv(Char('a'), 'a')
             )
         ).toBe(true)
 
         // Dc([a-z]) = Dc(c)
         expect(
             equals(
-                deriv(Range({ from: 'a', to: 'z' }), 'c'),
-                deriv(Char({ value: 'c' }), 'c')
+                deriv(Range('a', 'z'), 'c'),
+                deriv(Char('c'), 'c')
             )
         ).toBe(true)
 
         // Dc([a-b]) = Dc(∅)
         expect(
             equals(
-                deriv(Range({ from: 'a', to: 'b' }), 'c'),
+                deriv(Range('a', 'b'), 'c'),
                 Nil
             )
         ).toBe(true)
     })
     test('deriv Rep', () => {
-        const L = Char({ value: 'a' })
+        const L = Char('a')
 
         // Dc(L{0}) = ε
         expect(
             equals(
-                deriv(Rep({ lang: L, n: 0 }), 'a'),
+                deriv(Rep(L, 0), 'a'),
                 Empty
             )
         ).toBe(true)
@@ -229,7 +229,7 @@ describe('RegularLanguage', () => {
         // Dc(L{1}) = Dc(L)
         expect(
             equals(
-                deriv(Rep({ lang: L, n: 1 }), 'a'),
+                deriv(Rep(L, 1), 'a'),
                 deriv(L, 'a')
             )
         ).toBe(true)
@@ -237,18 +237,18 @@ describe('RegularLanguage', () => {
         // Dc(L{n}) = Dc(L)◦L{n-1}
         expect(
             equals(
-                deriv(Rep({ lang: L, n: 2 }), 'a'),
-                Cat({ first: deriv(L, 'a'), second: Rep({ lang: L, n: 1 }) })
+                deriv(Rep(L, 2), 'a'),
+                Cat(deriv(L, 'a'), Rep(L, 1))
             )
         ).toBe(true)
     })
     test('deriv Star', () => {
-        const L = Char({ value: 'a' })
+        const L = Char('a')
         // Dc(L*) = Dc(L)◦L*
         expect(
             equals(
-                deriv(Star({ lang: L }), 'a'),
-                Cat({ first: deriv(L, 'a'), second: Star({ lang: L }) })
+                deriv(Star(L), 'a'),
+                Cat(deriv(L, 'a'), Star(L))
             )
         ).toBe(true)
     })
@@ -256,45 +256,45 @@ describe('RegularLanguage', () => {
         // Dc("") = Dc(ε)
         expect(
             equals(
-                deriv(Token({ value: '' }), 'a'),
+                deriv(Token(''), 'a'),
                 deriv(Empty, 'a')
             )
         ).toBe(true)
         // Dc("c") = Dc(c)
         expect(
             equals(
-                deriv(Token({ value: 'a' }), 'a'),
-                deriv(Char({ value: 'a' }), 'a')
+                deriv(Token('a'), 'a'),
+                deriv(Char('a'), 'a')
             )
         ).toBe(true)
         // Dc("abc") = Dc("a")◦"bc"
         expect(
             equals(
-                deriv(Token({ value: 'abc' }), 'a'),
-                Cat({ first: deriv(Token({ value: 'a' }), 'a'), second: Token({ value: 'bc' }) })
+                deriv(Token('abc'), 'a'),
+                Cat(deriv(Token('a'), 'a'), Token('bc'))
             )
         ).toBe(true)
     })
     test('equals', () => {
         // a | b = a | b
-        expect(equals(Alt({ left: Char({ value: 'a' }), right: Char({ value: 'b' }) }), Alt({ left: Char({ value: 'a' }), right: Char({ value: 'b' }) }))).toBe(true)
+        expect(equals(Alt(Char('a'), Char('b')), Alt(Char('a'), Char('b')))).toBe(true)
         // a | b ≠ .
-        expect(equals(Alt({ left: Char({ value: 'a' }), right: Char({ value: 'b' }) }), Any)).toBe(false)
+        expect(equals(Alt(Char('a'), Char('b')), Any)).toBe(false)
 
         // . = .
         expect(equals(Any, Any)).toBe(true)
         // . ≠ a
-        expect(equals(Any, Cat({ first: Char({ value: 'a' }), second: Char({ value: 'b' }) }))).toBe(false)
+        expect(equals(Any, Cat(Char('a'), Char('b')))).toBe(false)
 
         // a◦b = a◦b
-        expect(equals(Cat({ first: Char({ value: 'a' }), second: Char({ value: 'b' }) }), Cat({ first: Char({ value: 'a' }), second: Char({ value: 'b' }) }))).toBe(true)
+        expect(equals(Cat(Char('a'), Char('b')), Cat(Char('a'), Char('b')))).toBe(true)
         // a◦b ≠ a◦.
-        expect(equals(Char({ value: 'a' }), Any)).toBe(false)
+        expect(equals(Char('a'), Any)).toBe(false)
 
         // a = a
-        expect(equals(Char({ value: 'a' }), Char({ value: 'a' }))).toBe(true)
+        expect(equals(Char('a'), Char('a'))).toBe(true)
         // a ≠ ε
-        expect(equals(Char({ value: 'a' }), Empty)).toBe(false)
+        expect(equals(Char('a'), Empty)).toBe(false)
 
         // ε = ε
         expect(equals(Empty, Empty)).toBe(true)
@@ -304,276 +304,276 @@ describe('RegularLanguage', () => {
         // ∅ = ∅
         expect(equals(Nil, Nil)).toBe(true)
         // ∅ ≠ a
-        expect(equals(Nil, Not({ lang: Char({ value: 'a' }) }))).toBe(false)
+        expect(equals(Nil, Not(Char('a')))).toBe(false)
 
         // ¬a = ¬a
-        expect(equals(Not({ lang: Char({ value: 'a' }) }), Not({ lang: Char({ value: 'a' }) }))).toBe(true)
+        expect(equals(Not(Char('a')), Not(Char('a')))).toBe(true)
         // ¬a ≠ [a-b]
-        expect(equals(Not({ lang: Char({ value: 'a' }) }), Range({ from: 'a', to: 'b' }))).toBe(false)
+        expect(equals(Not(Char('a')), Range('a', 'b'))).toBe(false)
 
         // a? = a?
-        expect(equals(Opt({ lang: Char({ value: 'a' }) }), Opt({ lang: Char({ value: 'a' }) }))).toBe(true)
+        expect(equals(Opt(Char('a')), Opt(Char('a')))).toBe(true)
         // a? ≠ b?
-        expect(equals(Opt({ lang: Char({ value: 'a' }) }), Opt({ lang: Char({ value: 'b' }) }))).toBe(false)
+        expect(equals(Opt(Char('a')), Opt(Char('b')))).toBe(false)
 
         // a+ = a+
-        expect(equals(Plus({ lang: Char({ value: 'a' }) }), Plus({ lang: Char({ value: 'a' }) }))).toBe(true)
+        expect(equals(Plus(Char('a')), Plus(Char('a')))).toBe(true)
         // a+ ≠ a{1}
-        expect(equals(Plus({ lang: Char({ value: 'a' }) }), Rep({ lang: Char({ value: 'a' }), n: 1 }))).toBe(false)
+        expect(equals(Plus(Char('a')), Rep(Char('a'), 1))).toBe(false)
 
         // [a-b] = [a-b]
-        expect(equals(Range({ from: 'a', to: 'b' }), Range({ from: 'a', to: 'b' }))).toBe(true)
+        expect(equals(Range('a', 'b'), Range('a', 'b'))).toBe(true)
         // [a-b] ≠ a{0}
-        expect(equals(Range({ from: 'a', to: 'b' }), Rep({ lang: Char({ value: 'a' }), n: 0 }))).toBe(false)
+        expect(equals(Range('a', 'b'), Rep(Char('a'), 0))).toBe(false)
         // [a-b] ≠ [b-a]
-        expect(equals(Range({ from: 'a', to: 'b' }), Range({ from: 'b', to: 'a' }))).toBe(false)
+        expect(equals(Range('a', 'b'), Range('b', 'a'))).toBe(false)
 
         // a{0} = a{0}
-        expect(equals(Rep({ lang: Char({ value: 'a' }), n: 0 }), Rep({ lang: Char({ value: 'a' }), n: 0 }))).toBe(true)
+        expect(equals(Rep(Char('a'), 0), Rep(Char('a'), 0))).toBe(true)
         // a{0} ≠ a*
-        expect(equals(Rep({ lang: Char({ value: 'a' }), n: 0 }), Star({ lang: Char({ value: 'a' }) }))).toBe(false)
+        expect(equals(Rep(Char('a'), 0), Star(Char('a')))).toBe(false)
 
         // a* = a*
-        expect(equals(Star({ lang: Char({ value: 'a' }) }), Star({ lang: Char({ value: 'a' }) }))).toBe(true)
+        expect(equals(Star(Char('a')), Star(Char('a')))).toBe(true)
         // a* ≠ a
-        expect(equals(Star({ lang: Char({ value: 'a' }) }), Char({ value: 'a' }))).toBe(false)
+        expect(equals(Star(Char('a')), Char('a'))).toBe(false)
 
         // abc = abc
-        expect(equals(Token({ value: 'abc' }), Token({ value: 'abc' }))).toBe(true)
+        expect(equals(Token('abc'), Token('abc'))).toBe(true)
         // ab ≠ a|b
-        expect(equals(Token({ value: 'ab' }), Alt({ left: Char({ value: 'a' }), right: Char({ value: 'b' }) }))).toBe(false)
+        expect(equals(Token('ab'), Alt(Char('a'), Char('b')))).toBe(false)
     })
     test('height', () => {
-        expect(height(Alt({ left: Char({ value: 'a' }), right: Char({ value: 'b' }) }))).toBe(2)
+        expect(height(Alt(Char('a'), Char('b')))).toBe(2)
         expect(height(Any)).toBe(1)
-        expect(height(Cat({ first: Char({ value: 'a' }), second: Char({ value: 'b' }) }))).toBe(2)
-        expect(height(Char({ value: 'a' }))).toBe(1)
+        expect(height(Cat(Char('a'), Char('b')))).toBe(2)
+        expect(height(Char('a'))).toBe(1)
         expect(height(Empty)).toBe(1)
         expect(height(Nil)).toBe(1)
-        expect(height(Not({ lang: Char({ value: 'a' }) }))).toBe(2)
-        expect(height(Opt({ lang: Char({ value: 'a' }) }))).toBe(2)
-        expect(height(Plus({ lang: Char({ value: 'a' }) }))).toBe(2)
-        expect(height(Range({ from: 'a', to: 'b' }))).toBe(1)
-        expect(height(Rep({ lang: Char({ value: 'a' }), n: 0 }))).toBe(2)
-        expect(height(Star({ lang: Char({ value: 'a' }) }))).toBe(2)
-        expect(height(Token({ value: 'a' }))).toBe(1)
-        expect(height(Alt({
-            left: Char({ value: 'a' }),
-            right: Alt({ left: Char({ value: 'b' }), right: Char({ value: 'c' }) })
-        }))).toBe(3)
+        expect(height(Not(Char('a')))).toBe(2)
+        expect(height(Opt(Char('a')))).toBe(2)
+        expect(height(Plus(Char('a')))).toBe(2)
+        expect(height(Range('a', 'b'))).toBe(1)
+        expect(height(Rep(Char('a'), 0))).toBe(2)
+        expect(height(Star(Char('a')))).toBe(2)
+        expect(height(Token('a'))).toBe(1)
+        expect(height(Alt(
+            Char('a'),
+            Alt(Char('b'), Char('c'))
+        ))).toBe(3)
     })
     test('isAlt', () => {
-        expect(isAlt(Alt({ left: Char({ value: 'a' }), right: Char({ value: 'b' }) }))).toBe(true)
+        expect(isAlt(Alt(Char('a'), Char('b')))).toBe(true)
         expect(isAlt(Any)).toBe(false)
-        expect(isAlt(Cat({ first: Char({ value: 'a' }), second: Char({ value: 'b' }) }))).toBe(false)
-        expect(isAlt(Char({ value: 'a' }))).toBe(false)
+        expect(isAlt(Cat(Char('a'), Char('b')))).toBe(false)
+        expect(isAlt(Char('a'))).toBe(false)
         expect(isAlt(Empty)).toBe(false)
         expect(isAlt(Nil)).toBe(false)
-        expect(isAlt(Not({ lang: Char({ value: 'a' }) }))).toBe(false)
-        expect(isAlt(Opt({ lang: Char({ value: 'a' }) }))).toBe(false)
-        expect(isAlt(Plus({ lang: Char({ value: 'a' }) }))).toBe(false)
-        expect(isAlt(Range({ from: 'a', to: 'b' }))).toBe(false)
-        expect(isAlt(Rep({ lang: Char({ value: 'a' }), n: 0 }))).toBe(false)
-        expect(isAlt(Star({ lang: Char({ value: 'a' }) }))).toBe(false)
-        expect(isAlt(Token({ value: 'a' }))).toBe(false)
+        expect(isAlt(Not(Char('a')))).toBe(false)
+        expect(isAlt(Opt(Char('a')))).toBe(false)
+        expect(isAlt(Plus(Char('a')))).toBe(false)
+        expect(isAlt(Range('a', 'b'))).toBe(false)
+        expect(isAlt(Rep(Char('a'), 0))).toBe(false)
+        expect(isAlt(Star(Char('a')))).toBe(false)
+        expect(isAlt(Token('a'))).toBe(false)
     })
     test('isAny', () => {
-        expect(isAny(Alt({ left: Char({ value: 'a' }), right: Char({ value: 'b' }) }))).toBe(false)
+        expect(isAny(Alt(Char('a'), Char('b')))).toBe(false)
         expect(isAny(Any)).toBe(true)
-        expect(isAny(Cat({ first: Char({ value: 'a' }), second: Char({ value: 'b' }) }))).toBe(false)
-        expect(isAny(Char({ value: 'a' }))).toBe(false)
+        expect(isAny(Cat(Char('a'), Char('b')))).toBe(false)
+        expect(isAny(Char('a'))).toBe(false)
         expect(isAny(Empty)).toBe(false)
         expect(isAny(Nil)).toBe(false)
-        expect(isAny(Not({ lang: Char({ value: 'a' }) }))).toBe(false)
-        expect(isAny(Opt({ lang: Char({ value: 'a' }) }))).toBe(false)
-        expect(isAny(Plus({ lang: Char({ value: 'a' }) }))).toBe(false)
-        expect(isAny(Range({ from: 'a', to: 'b' }))).toBe(false)
-        expect(isAny(Rep({ lang: Char({ value: 'a' }), n: 0 }))).toBe(false)
-        expect(isAny(Star({ lang: Char({ value: 'a' }) }))).toBe(false)
-        expect(isAny(Token({ value: 'a' }))).toBe(false)
+        expect(isAny(Not(Char('a')))).toBe(false)
+        expect(isAny(Opt(Char('a')))).toBe(false)
+        expect(isAny(Plus(Char('a')))).toBe(false)
+        expect(isAny(Range('a', 'b'))).toBe(false)
+        expect(isAny(Rep(Char('a'), 0))).toBe(false)
+        expect(isAny(Star(Char('a')))).toBe(false)
+        expect(isAny(Token('a'))).toBe(false)
     })
     test('isCat', () => {
-        expect(isCat(Alt({ left: Char({ value: 'a' }), right: Char({ value: 'b' }) }))).toBe(false)
+        expect(isCat(Alt(Char('a'), Char('b')))).toBe(false)
         expect(isCat(Any)).toBe(false)
-        expect(isCat(Cat({ first: Char({ value: 'a' }), second: Char({ value: 'b' }) }))).toBe(true)
-        expect(isCat(Char({ value: 'a' }))).toBe(false)
+        expect(isCat(Cat(Char('a'), Char('b')))).toBe(true)
+        expect(isCat(Char('a'))).toBe(false)
         expect(isCat(Empty)).toBe(false)
         expect(isCat(Nil)).toBe(false)
-        expect(isCat(Not({ lang: Char({ value: 'a' }) }))).toBe(false)
-        expect(isCat(Opt({ lang: Char({ value: 'a' }) }))).toBe(false)
-        expect(isCat(Plus({ lang: Char({ value: 'a' }) }))).toBe(false)
-        expect(isCat(Range({ from: 'a', to: 'b' }))).toBe(false)
-        expect(isCat(Rep({ lang: Char({ value: 'a' }), n: 0 }))).toBe(false)
-        expect(isCat(Star({ lang: Char({ value: 'a' }) }))).toBe(false)
-        expect(isCat(Token({ value: 'a' }))).toBe(false)
+        expect(isCat(Not(Char('a')))).toBe(false)
+        expect(isCat(Opt(Char('a')))).toBe(false)
+        expect(isCat(Plus(Char('a')))).toBe(false)
+        expect(isCat(Range('a', 'b'))).toBe(false)
+        expect(isCat(Rep(Char('a'), 0))).toBe(false)
+        expect(isCat(Star(Char('a')))).toBe(false)
+        expect(isCat(Token('a'))).toBe(false)
     })
     test('isChar', () => {
-        expect(isChar(Alt({ left: Char({ value: 'a' }), right: Char({ value: 'b' }) }))).toBe(false)
+        expect(isChar(Alt(Char('a'), Char('b')))).toBe(false)
         expect(isChar(Any)).toBe(false)
-        expect(isChar(Cat({ first: Char({ value: 'a' }), second: Char({ value: 'b' }) }))).toBe(false)
-        expect(isChar(Char({ value: 'a' }))).toBe(true)
+        expect(isChar(Cat(Char('a'), Char('b')))).toBe(false)
+        expect(isChar(Char('a'))).toBe(true)
         expect(isChar(Empty)).toBe(false)
         expect(isChar(Nil)).toBe(false)
-        expect(isChar(Not({ lang: Char({ value: 'a' }) }))).toBe(false)
-        expect(isChar(Opt({ lang: Char({ value: 'a' }) }))).toBe(false)
-        expect(isChar(Plus({ lang: Char({ value: 'a' }) }))).toBe(false)
-        expect(isChar(Range({ from: 'a', to: 'b' }))).toBe(false)
-        expect(isChar(Rep({ lang: Char({ value: 'a' }), n: 0 }))).toBe(false)
-        expect(isChar(Star({ lang: Char({ value: 'a' }) }))).toBe(false)
-        expect(isChar(Token({ value: 'a' }))).toBe(false)
+        expect(isChar(Not(Char('a')))).toBe(false)
+        expect(isChar(Opt(Char('a')))).toBe(false)
+        expect(isChar(Plus(Char('a')))).toBe(false)
+        expect(isChar(Range('a', 'b'))).toBe(false)
+        expect(isChar(Rep(Char('a'), 0))).toBe(false)
+        expect(isChar(Star(Char('a')))).toBe(false)
+        expect(isChar(Token('a'))).toBe(false)
     })
     test('isEmpty', () => {
-        expect(isEmpty(Alt({ left: Char({ value: 'a' }), right: Char({ value: 'b' }) }))).toBe(false)
+        expect(isEmpty(Alt(Char('a'), Char('b')))).toBe(false)
         expect(isEmpty(Any)).toBe(false)
-        expect(isEmpty(Cat({ first: Char({ value: 'a' }), second: Char({ value: 'b' }) }))).toBe(false)
-        expect(isEmpty(Char({ value: 'a' }))).toBe(false)
+        expect(isEmpty(Cat(Char('a'), Char('b')))).toBe(false)
+        expect(isEmpty(Char('a'))).toBe(false)
         expect(isEmpty(Empty)).toBe(true)
         expect(isEmpty(Nil)).toBe(false)
-        expect(isEmpty(Not({ lang: Char({ value: 'a' }) }))).toBe(false)
-        expect(isEmpty(Opt({ lang: Char({ value: 'a' }) }))).toBe(false)
-        expect(isEmpty(Plus({ lang: Char({ value: 'a' }) }))).toBe(false)
-        expect(isEmpty(Range({ from: 'a', to: 'b' }))).toBe(false)
-        expect(isEmpty(Rep({ lang: Char({ value: 'a' }), n: 0 }))).toBe(false)
-        expect(isEmpty(Star({ lang: Char({ value: 'a' }) }))).toBe(false)
-        expect(isEmpty(Token({ value: 'a' }))).toBe(false)
+        expect(isEmpty(Not(Char('a')))).toBe(false)
+        expect(isEmpty(Opt(Char('a')))).toBe(false)
+        expect(isEmpty(Plus(Char('a')))).toBe(false)
+        expect(isEmpty(Range('a', 'b'))).toBe(false)
+        expect(isEmpty(Rep(Char('a'), 0))).toBe(false)
+        expect(isEmpty(Star(Char('a')))).toBe(false)
+        expect(isEmpty(Token('a'))).toBe(false)
     })
     test('isNil', () => {
-        expect(isNil(Alt({ left: Char({ value: 'a' }), right: Char({ value: 'b' }) }))).toBe(false)
+        expect(isNil(Alt(Char('a'), Char('b')))).toBe(false)
         expect(isNil(Any)).toBe(false)
-        expect(isNil(Cat({ first: Char({ value: 'a' }), second: Char({ value: 'b' }) }))).toBe(false)
-        expect(isNil(Char({ value: 'a' }))).toBe(false)
+        expect(isNil(Cat(Char('a'), Char('b')))).toBe(false)
+        expect(isNil(Char('a'))).toBe(false)
         expect(isNil(Empty)).toBe(false)
         expect(isNil(Nil)).toBe(true)
-        expect(isNil(Not({ lang: Char({ value: 'a' }) }))).toBe(false)
-        expect(isNil(Opt({ lang: Char({ value: 'a' }) }))).toBe(false)
-        expect(isNil(Plus({ lang: Char({ value: 'a' }) }))).toBe(false)
-        expect(isNil(Range({ from: 'a', to: 'b' }))).toBe(false)
-        expect(isNil(Rep({ lang: Char({ value: 'a' }), n: 0 }))).toBe(false)
-        expect(isNil(Star({ lang: Char({ value: 'a' }) }))).toBe(false)
-        expect(isNil(Token({ value: 'a' }))).toBe(false)
+        expect(isNil(Not(Char('a')))).toBe(false)
+        expect(isNil(Opt(Char('a')))).toBe(false)
+        expect(isNil(Plus(Char('a')))).toBe(false)
+        expect(isNil(Range('a', 'b'))).toBe(false)
+        expect(isNil(Rep(Char('a'), 0))).toBe(false)
+        expect(isNil(Star(Char('a')))).toBe(false)
+        expect(isNil(Token('a'))).toBe(false)
     })
     test('isNot', () => {
-        expect(isNot(Alt({ left: Char({ value: 'a' }), right: Char({ value: 'b' }) }))).toBe(false)
+        expect(isNot(Alt(Char('a'), Char('b')))).toBe(false)
         expect(isNot(Any)).toBe(false)
-        expect(isNot(Cat({ first: Char({ value: 'a' }), second: Char({ value: 'b' }) }))).toBe(false)
-        expect(isNot(Char({ value: 'a' }))).toBe(false)
+        expect(isNot(Cat(Char('a'), Char('b')))).toBe(false)
+        expect(isNot(Char('a'))).toBe(false)
         expect(isNot(Empty)).toBe(false)
         expect(isNot(Nil)).toBe(false)
-        expect(isNot(Not({ lang: Char({ value: 'a' }) }))).toBe(true)
-        expect(isNot(Opt({ lang: Char({ value: 'a' }) }))).toBe(false)
-        expect(isNot(Plus({ lang: Char({ value: 'a' }) }))).toBe(false)
-        expect(isNot(Range({ from: 'a', to: 'b' }))).toBe(false)
-        expect(isNot(Rep({ lang: Char({ value: 'a' }), n: 0 }))).toBe(false)
-        expect(isNot(Star({ lang: Char({ value: 'a' }) }))).toBe(false)
-        expect(isNot(Token({ value: 'a' }))).toBe(false)
+        expect(isNot(Not(Char('a')))).toBe(true)
+        expect(isNot(Opt(Char('a')))).toBe(false)
+        expect(isNot(Plus(Char('a')))).toBe(false)
+        expect(isNot(Range('a', 'b'))).toBe(false)
+        expect(isNot(Rep(Char('a'), 0))).toBe(false)
+        expect(isNot(Star(Char('a')))).toBe(false)
+        expect(isNot(Token('a'))).toBe(false)
     })
     test('isOpt', () => {
-        expect(isOpt(Alt({ left: Char({ value: 'a' }), right: Char({ value: 'b' }) }))).toBe(false)
+        expect(isOpt(Alt(Char('a'), Char('b')))).toBe(false)
         expect(isOpt(Any)).toBe(false)
-        expect(isOpt(Cat({ first: Char({ value: 'a' }), second: Char({ value: 'b' }) }))).toBe(false)
-        expect(isOpt(Char({ value: 'a' }))).toBe(false)
+        expect(isOpt(Cat(Char('a'), Char('b')))).toBe(false)
+        expect(isOpt(Char('a'))).toBe(false)
         expect(isOpt(Empty)).toBe(false)
         expect(isOpt(Nil)).toBe(false)
-        expect(isOpt(Not({ lang: Char({ value: 'a' }) }))).toBe(false)
-        expect(isOpt(Opt({ lang: Char({ value: 'a' }) }))).toBe(true)
-        expect(isOpt(Plus({ lang: Char({ value: 'a' }) }))).toBe(false)
-        expect(isOpt(Range({ from: 'a', to: 'b' }))).toBe(false)
-        expect(isOpt(Rep({ lang: Char({ value: 'a' }), n: 0 }))).toBe(false)
-        expect(isOpt(Star({ lang: Char({ value: 'a' }) }))).toBe(false)
-        expect(isOpt(Token({ value: 'a' }))).toBe(false)
+        expect(isOpt(Not(Char('a')))).toBe(false)
+        expect(isOpt(Opt(Char('a')))).toBe(true)
+        expect(isOpt(Plus(Char('a')))).toBe(false)
+        expect(isOpt(Range('a', 'b'))).toBe(false)
+        expect(isOpt(Rep(Char('a'), 0))).toBe(false)
+        expect(isOpt(Star(Char('a')))).toBe(false)
+        expect(isOpt(Token('a'))).toBe(false)
     })
     test('isPlus', () => {
-        expect(isPlus(Alt({ left: Char({ value: 'a' }), right: Char({ value: 'b' }) }))).toBe(false)
+        expect(isPlus(Alt(Char('a'), Char('b')))).toBe(false)
         expect(isPlus(Any)).toBe(false)
-        expect(isPlus(Cat({ first: Char({ value: 'a' }), second: Char({ value: 'b' }) }))).toBe(false)
-        expect(isPlus(Char({ value: 'a' }))).toBe(false)
+        expect(isPlus(Cat(Char('a'), Char('b')))).toBe(false)
+        expect(isPlus(Char('a'))).toBe(false)
         expect(isPlus(Empty)).toBe(false)
         expect(isPlus(Nil)).toBe(false)
-        expect(isPlus(Not({ lang: Char({ value: 'a' }) }))).toBe(false)
-        expect(isPlus(Opt({ lang: Char({ value: 'a' }) }))).toBe(false)
-        expect(isPlus(Plus({ lang: Char({ value: 'a' }) }))).toBe(true)
-        expect(isPlus(Range({ from: 'a', to: 'b' }))).toBe(false)
-        expect(isPlus(Rep({ lang: Char({ value: 'a' }), n: 0 }))).toBe(false)
-        expect(isPlus(Star({ lang: Char({ value: 'a' }) }))).toBe(false)
-        expect(isPlus(Token({ value: 'a' }))).toBe(false)
+        expect(isPlus(Not(Char('a')))).toBe(false)
+        expect(isPlus(Opt(Char('a')))).toBe(false)
+        expect(isPlus(Plus(Char('a')))).toBe(true)
+        expect(isPlus(Range('a', 'b'))).toBe(false)
+        expect(isPlus(Rep(Char('a'), 0))).toBe(false)
+        expect(isPlus(Star(Char('a')))).toBe(false)
+        expect(isPlus(Token('a'))).toBe(false)
     })
     test('isRange', () => {
-        expect(isRange(Alt({ left: Char({ value: 'a' }), right: Char({ value: 'b' }) }))).toBe(false)
+        expect(isRange(Alt(Char('a'), Char('b')))).toBe(false)
         expect(isRange(Any)).toBe(false)
-        expect(isRange(Cat({ first: Char({ value: 'a' }), second: Char({ value: 'b' }) }))).toBe(false)
-        expect(isRange(Char({ value: 'a' }))).toBe(false)
+        expect(isRange(Cat(Char('a'), Char('b')))).toBe(false)
+        expect(isRange(Char('a'))).toBe(false)
         expect(isRange(Empty)).toBe(false)
         expect(isRange(Nil)).toBe(false)
-        expect(isRange(Not({ lang: Char({ value: 'a' }) }))).toBe(false)
-        expect(isRange(Opt({ lang: Char({ value: 'a' }) }))).toBe(false)
-        expect(isRange(Plus({ lang: Char({ value: 'a' }) }))).toBe(false)
-        expect(isRange(Range({ from: 'a', to: 'b' }))).toBe(true)
-        expect(isRange(Rep({ lang: Char({ value: 'a' }), n: 0 }))).toBe(false)
-        expect(isRange(Star({ lang: Char({ value: 'a' }) }))).toBe(false)
-        expect(isRange(Token({ value: 'a' }))).toBe(false)
+        expect(isRange(Not(Char('a')))).toBe(false)
+        expect(isRange(Opt(Char('a')))).toBe(false)
+        expect(isRange(Plus(Char('a')))).toBe(false)
+        expect(isRange(Range('a', 'b'))).toBe(true)
+        expect(isRange(Rep(Char('a'), 0))).toBe(false)
+        expect(isRange(Star(Char('a')))).toBe(false)
+        expect(isRange(Token('a'))).toBe(false)
     })
     test('isRep', () => {
-        expect(isRep(Alt({ left: Char({ value: 'a' }), right: Char({ value: 'b' }) }))).toBe(false)
+        expect(isRep(Alt(Char('a'), Char('b')))).toBe(false)
         expect(isRep(Any)).toBe(false)
-        expect(isRep(Cat({ first: Char({ value: 'a' }), second: Char({ value: 'b' }) }))).toBe(false)
-        expect(isRep(Char({ value: 'a' }))).toBe(false)
+        expect(isRep(Cat(Char('a'), Char('b')))).toBe(false)
+        expect(isRep(Char('a'))).toBe(false)
         expect(isRep(Empty)).toBe(false)
         expect(isRep(Nil)).toBe(false)
-        expect(isRep(Not({ lang: Char({ value: 'a' }) }))).toBe(false)
-        expect(isRep(Opt({ lang: Char({ value: 'a' }) }))).toBe(false)
-        expect(isRep(Plus({ lang: Char({ value: 'a' }) }))).toBe(false)
-        expect(isRep(Range({ from: 'a', to: 'b' }))).toBe(false)
-        expect(isRep(Rep({ lang: Char({ value: 'a' }), n: 0 }))).toBe(true)
-        expect(isRep(Star({ lang: Char({ value: 'a' }) }))).toBe(false)
-        expect(isRep(Token({ value: 'a' }))).toBe(false)
+        expect(isRep(Not(Char('a')))).toBe(false)
+        expect(isRep(Opt(Char('a')))).toBe(false)
+        expect(isRep(Plus(Char('a')))).toBe(false)
+        expect(isRep(Range('a', 'b'))).toBe(false)
+        expect(isRep(Rep(Char('a'), 0))).toBe(true)
+        expect(isRep(Star(Char('a')))).toBe(false)
+        expect(isRep(Token('a'))).toBe(false)
     })
     test('isStar', () => {
-        expect(isStar(Alt({ left: Char({ value: 'a' }), right: Char({ value: 'b' }) }))).toBe(false)
+        expect(isStar(Alt(Char('a'), Char('b')))).toBe(false)
         expect(isStar(Any)).toBe(false)
-        expect(isStar(Cat({ first: Char({ value: 'a' }), second: Char({ value: 'b' }) }))).toBe(false)
-        expect(isStar(Char({ value: 'a' }))).toBe(false)
+        expect(isStar(Cat(Char('a'), Char('b')))).toBe(false)
+        expect(isStar(Char('a'))).toBe(false)
         expect(isStar(Empty)).toBe(false)
         expect(isStar(Nil)).toBe(false)
-        expect(isStar(Not({ lang: Char({ value: 'a' }) }))).toBe(false)
-        expect(isStar(Opt({ lang: Char({ value: 'a' }) }))).toBe(false)
-        expect(isStar(Plus({ lang: Char({ value: 'a' }) }))).toBe(false)
-        expect(isStar(Range({ from: 'a', to: 'b' }))).toBe(false)
-        expect(isStar(Rep({ lang: Char({ value: 'a' }), n: 0 }))).toBe(false)
-        expect(isStar(Star({ lang: Char({ value: 'a' }) }))).toBe(true)
-        expect(isStar(Token({ value: 'a' }))).toBe(false)
+        expect(isStar(Not(Char('a')))).toBe(false)
+        expect(isStar(Opt(Char('a')))).toBe(false)
+        expect(isStar(Plus(Char('a')))).toBe(false)
+        expect(isStar(Range('a', 'b'))).toBe(false)
+        expect(isStar(Rep(Char('a'), 0))).toBe(false)
+        expect(isStar(Star(Char('a')))).toBe(true)
+        expect(isStar(Token('a'))).toBe(false)
     })
     test('isToken', () => {
-        expect(isToken(Alt({ left: Char({ value: 'a' }), right: Char({ value: 'b' }) }))).toBe(false)
+        expect(isToken(Alt(Char('a'), Char('b')))).toBe(false)
         expect(isToken(Any)).toBe(false)
-        expect(isToken(Cat({ first: Char({ value: 'a' }), second: Char({ value: 'b' }) }))).toBe(false)
-        expect(isToken(Char({ value: 'a' }))).toBe(false)
+        expect(isToken(Cat(Char('a'), Char('b')))).toBe(false)
+        expect(isToken(Char('a'))).toBe(false)
         expect(isToken(Empty)).toBe(false)
         expect(isToken(Nil)).toBe(false)
-        expect(isToken(Not({ lang: Char({ value: 'a' }) }))).toBe(false)
-        expect(isToken(Opt({ lang: Char({ value: 'a' }) }))).toBe(false)
-        expect(isToken(Plus({ lang: Char({ value: 'a' }) }))).toBe(false)
-        expect(isToken(Range({ from: 'a', to: 'b' }))).toBe(false)
-        expect(isToken(Rep({ lang: Char({ value: 'a' }), n: 0 }))).toBe(false)
-        expect(isToken(Star({ lang: Char({ value: 'a' }) }))).toBe(false)
-        expect(isToken(Token({ value: 'a' }))).toBe(true)
+        expect(isToken(Not(Char('a')))).toBe(false)
+        expect(isToken(Opt(Char('a')))).toBe(false)
+        expect(isToken(Plus(Char('a')))).toBe(false)
+        expect(isToken(Range('a', 'b'))).toBe(false)
+        expect(isToken(Rep(Char('a'), 0))).toBe(false)
+        expect(isToken(Star(Char('a')))).toBe(false)
+        expect(isToken(Token('a'))).toBe(true)
     })
     test('matches', () => {
         // a|b matches "a"
-        expect(matches(Alt({ left: Char({ value: 'a' }), right: Char({ value: 'b' }) }), 'a')).toBe(true)
+        expect(matches(Alt(Char('a'), Char('b')), 'a')).toBe(true)
         // a|b matches "b"
-        expect(matches(Alt({ left: Char({ value: 'a' }), right: Char({ value: 'b' }) }), 'b')).toBe(true)
+        expect(matches(Alt(Char('a'), Char('b')), 'b')).toBe(true)
         // a|b does not match "c"
-        expect(matches(Alt({ left: Char({ value: 'a' }), right: Char({ value: 'b' }) }), 'c')).toBe(false)
+        expect(matches(Alt(Char('a'), Char('b')), 'c')).toBe(false)
         // . matches "a"
         expect(matches(Any, 'a')).toBe(true)
         // a◦b matches "ab"
-        expect(matches(Cat({ first: Char({ value: 'a' }), second: Char({ value: 'b' }) }), 'ab')).toBe(true)
+        expect(matches(Cat(Char('a'), Char('b')), 'ab')).toBe(true)
         // a◦b does not match "a"
-        expect(matches(Cat({ first: Char({ value: 'a' }), second: Char({ value: 'b' }) }), 'a')).toBe(false)
+        expect(matches(Cat(Char('a'), Char('b')), 'a')).toBe(false)
         // a matches "a"
-        expect(matches(Char({ value: 'a' }), 'a')).toBe(true)
+        expect(matches(Char('a'), 'a')).toBe(true)
         // a does not match "b"
-        expect(matches(Char({ value: 'a' }), 'b')).toBe(false)
+        expect(matches(Char('a'), 'b')).toBe(false)
         // ε matches ""
         expect(matches(Empty, '')).toBe(true)
         // ε does not match "a"
@@ -583,56 +583,56 @@ describe('RegularLanguage', () => {
         // ∅ does not match "a"
         expect(matches(Nil, 'a')).toBe(false)
         // ¬a does not match "a"
-        expect(matches(Not({ lang: Char({ value: 'a' }) }), 'a')).toBe(false)
+        expect(matches(Not(Char('a')), 'a')).toBe(false)
         // a+ matches "a"
-        expect(matches(Plus({ lang: Char({ value: 'a' }) }), 'a')).toBe(true)
+        expect(matches(Plus(Char('a')), 'a')).toBe(true)
         // a+ matches "aa"
-        expect(matches(Plus({ lang: Char({ value: 'a' }) }), 'aa')).toBe(true)
+        expect(matches(Plus(Char('a')), 'aa')).toBe(true)
         // a+ does not match ""
-        expect(matches(Plus({ lang: Char({ value: 'a' }) }), '')).toBe(false)
+        expect(matches(Plus(Char('a')), '')).toBe(false)
         // a? matches ""
-        expect(matches(Opt({ lang: Char({ value: 'a' }) }), '')).toBe(true)
+        expect(matches(Opt(Char('a')), '')).toBe(true)
         // a? matches "a"
-        expect(matches(Opt({ lang: Char({ value: 'a' }) }), 'a')).toBe(true)
+        expect(matches(Opt(Char('a')), 'a')).toBe(true)
         // a? does not match "b"
-        expect(matches(Opt({ lang: Char({ value: 'a' }) }), 'b')).toBe(false)
+        expect(matches(Opt(Char('a')), 'b')).toBe(false)
         // ¬a matches "b"
-        expect(matches(Not({ lang: Char({ value: 'a' }) }), 'b')).toBe(true)
+        expect(matches(Not(Char('a')), 'b')).toBe(true)
         // [a-b] matches "a"
-        expect(matches(Range({ from: 'a', to: 'b' }), 'a')).toBe(true)
+        expect(matches(Range('a', 'b'), 'a')).toBe(true)
         // [a-b] matches "b"
-        expect(matches(Range({ from: 'a', to: 'b' }), 'b')).toBe(true)
+        expect(matches(Range('a', 'b'), 'b')).toBe(true)
         // [a-b] does not match "c"
-        expect(matches(Range({ from: 'a', to: 'b' }), 'c')).toBe(false)
+        expect(matches(Range('a', 'b'), 'c')).toBe(false)
         // a{0} matches ""
-        expect(matches(Rep({ lang: Char({ value: 'a' }), n: 0 }), '')).toBe(true)
+        expect(matches(Rep(Char('a'), 0), '')).toBe(true)
         // a{0} does not match "a"
-        expect(matches(Rep({ lang: Char({ value: 'a' }), n: 0 }), 'a')).toBe(false)
+        expect(matches(Rep(Char('a'), 0), 'a')).toBe(false)
         // a{1} matches "a"
-        expect(matches(Rep({ lang: Char({ value: 'a' }), n: 1 }), 'a')).toBe(true)
+        expect(matches(Rep(Char('a'), 1), 'a')).toBe(true)
         // a{1} does not match "aa"
-        expect(matches(Rep({ lang: Char({ value: 'a' }), n: 1 }), 'aa')).toBe(false)
+        expect(matches(Rep(Char('a'), 1), 'aa')).toBe(false)
         // a{2} matches "aa"
-        expect(matches(Rep({ lang: Char({ value: 'a' }), n: 2 }), 'aa')).toBe(true)
+        expect(matches(Rep(Char('a'), 2), 'aa')).toBe(true)
         // a{1} does not match "a"
-        expect(matches(Rep({ lang: Char({ value: 'a' }), n: 0 }), 'a')).toBe(false)
+        expect(matches(Rep(Char('a'), 0), 'a')).toBe(false)
         // a* matches ""
-        expect(matches(Star({ lang: Char({ value: 'a' }) }), '')).toBe(true)
+        expect(matches(Star(Char('a')), '')).toBe(true)
         // a* matches "a"
-        expect(matches(Star({ lang: Char({ value: 'a' }) }), 'a')).toBe(true)
+        expect(matches(Star(Char('a')), 'a')).toBe(true)
         // a* matches "aa"
-        expect(matches(Star({ lang: Char({ value: 'a' }) }), 'aa')).toBe(true)
+        expect(matches(Star(Char('a')), 'aa')).toBe(true)
         // "abc" matches "abc"
-        expect(matches(Token({ value: 'abc' }), 'abc')).toBe(true)
+        expect(matches(Token('abc'), 'abc')).toBe(true)
         // "abc" does not match "ab"
-        expect(matches(Token({ value: 'abc' }), 'ab')).toBe(false)
+        expect(matches(Token('abc'), 'ab')).toBe(false)
     })
     test('nilOrEmpty', () => {
         // δ(L1 ∪ L2) = δ(L1) ∪ δ(L2)
         expect(
             equals(
-                nilOrEmpty(Alt({ left: Char({ value: 'a' }), right: Char({ value: 'b' }) })),
-                Alt({ left: nilOrEmpty(Char({ value: 'a' })), right: nilOrEmpty(Char({ value: 'b' })) })
+                nilOrEmpty(Alt(Char('a'), Char('b'))),
+                Alt(nilOrEmpty(Char('a')), nilOrEmpty(Char('b')))
             )
         ).toBe(true)
 
@@ -642,13 +642,13 @@ describe('RegularLanguage', () => {
         // δ(L1◦L2) = δ(L1)◦δ(L2)
         expect(
             equals(
-                nilOrEmpty(Cat({ first: Char({ value: 'a' }), second: Char({ value: 'b' }) })),
-                Cat({ first: nilOrEmpty(Char({ value: 'a' })), second: nilOrEmpty(Char({ value: 'b' })) })
+                nilOrEmpty(Cat(Char('a'), Char('b'))),
+                Cat(nilOrEmpty(Char('a')), nilOrEmpty(Char('b')))
             )
         ).toBe(true)
 
         // δ(c) = ∅
-        expect(equals(nilOrEmpty(Char({ value: 'a' })), Nil)).toBe(true)
+        expect(equals(nilOrEmpty(Char('a')), Nil)).toBe(true)
 
         // δ(ε) = ε
         expect(equals(nilOrEmpty(Empty), Empty)).toBe(true)
@@ -657,57 +657,57 @@ describe('RegularLanguage', () => {
         expect(equals(nilOrEmpty(Nil), Nil)).toBe(true)
 
         // δ(¬P) = ε if δ(P) = ∅
-        expect(equals(nilOrEmpty(Not({ lang: Nil })), Empty)).toBe(true)
+        expect(equals(nilOrEmpty(Not(Nil)), Empty)).toBe(true)
 
         // δ(¬P) = ∅ if δ(P) = ε
-        expect(equals(nilOrEmpty(Not({ lang: Empty })), Nil)).toBe(true)
+        expect(equals(nilOrEmpty(Not(Empty)), Nil)).toBe(true)
 
         // δ(P?) = ε
-        expect(equals(nilOrEmpty(Opt({ lang: Char({ value: 'a' }) })), Empty)).toBe(true)
+        expect(equals(nilOrEmpty(Opt(Char('a'))), Empty)).toBe(true)
 
         // δ([a-z]) = ∅
-        expect(equals(nilOrEmpty(Range({ from: 'a', to: 'z' })), Nil)).toBe(true)
+        expect(equals(nilOrEmpty(Range('a', 'z')), Nil)).toBe(true)
 
         // δ(L{0}) = ε
-        expect(equals(nilOrEmpty(Rep({ lang: Char({ value: 'a' }), n: 0 })), Empty)).toBe(true)
+        expect(equals(nilOrEmpty(Rep(Char('a'), 0)), Empty)).toBe(true)
 
         // δ(L{n}) = δ(L)
         expect(equals(
-            nilOrEmpty(Rep({ lang: Char({ value: 'a' }), n: 1 })),
-            nilOrEmpty(Char({ value: 'a' }))
+            nilOrEmpty(Rep(Char('a'), 1)),
+            nilOrEmpty(Char('a'))
         )).toBe(true)
 
         // δ(L*) = ε
-        expect(equals(nilOrEmpty(Star({ lang: Char({ value: 'a' }) })), Empty)).toBe(true)
+        expect(equals(nilOrEmpty(Star(Char('a'))), Empty)).toBe(true)
 
         // δ("abc") = ∅
-        expect(equals(nilOrEmpty(Token({ value: 'abc' })), Nil)).toBe(true)
+        expect(equals(nilOrEmpty(Token('abc')), Nil)).toBe(true)
     })
     test('simplify', () => {
         // L ∪ L → L
         expect(equals(
-            simplify(Alt({ left: Char({ value: 'a' }), right: Char({ value: 'a' }) })),
-            Char({ value: 'a' })
+            simplify(Alt(Char('a'), Char('a'))),
+            Char('a')
         )).toBe(true)
         // M ∪ L → L ∪ M
         expect(equals(
-            simplify(Alt({ left: Not({ lang: Char({ value: 'b' }) }), right: Char({ value: 'a' }) })),
-            Alt({ left: Char({ value: 'a' }), right: Not({ lang: Char({ value: 'b' }) }) })
+            simplify(Alt(Not(Char('b')), Char('a'))),
+            Alt(Char('a'), Not(Char('b')))
         )).toBe(true)
         // ∅ ∪ L → L
         expect(equals(
-            simplify(Alt({ left: Nil, right: Char({ value: 'a' }) })),
-            Char({ value: 'a' })
+            simplify(Alt(Nil, Char('a'))),
+            Char('a')
         )).toBe(true)
         // L ∪ ∅ → L
         expect(equals(
-            simplify(Alt({ left: Char({ value: 'a' }), right: Nil })),
-            Char({ value: 'a' })
+            simplify(Alt(Char('a'), Nil)),
+            Char('a')
         )).toBe(true)
         // (L ∪ M) ∪ N → L ∪ (M ∪ N)
         expect(equals(
-            simplify(Alt({ left: Alt({ left: Char({ value: 'a' }), right: Char({ value: 'b' }) }), right: Char({ value: 'c' }) })),
-            Alt({ left: Char({ value: 'a' }), right: Alt({ left: Char({ value: 'b' }), right: Char({ value: 'c' }) }) })
+            simplify(Alt(Alt(Char('a'), Char('b')), Char('c'))),
+            Alt(Char('a'), Alt(Char('b'), Char('c')))
         )).toBe(true)
         // . → .
         expect(equals(
@@ -716,26 +716,26 @@ describe('RegularLanguage', () => {
         )).toBe(true)
         // PƐ → ƐP → P
         expect(equals(
-            simplify(Cat({ first: Char({ value: 'a' }), second: Empty })),
-            Char({ value: 'a' })
+            simplify(Cat(Char('a'), Empty)),
+            Char('a')
         )).toBe(true)
         expect(equals(
-            simplify(Cat({ first: Empty, second: Char({ value: 'a' }) })),
-            Char({ value: 'a' })
+            simplify(Cat(Empty, Char('a'))),
+            Char('a')
         )).toBe(true)
         // ∅P → P∅ → ∅
         expect(equals(
-            simplify(Cat({ first: Nil, second: Char({ value: 'a' }) })),
+            simplify(Cat(Nil, Char('a'))),
             Nil
         )).toBe(true)
         expect(equals(
-            simplify(Cat({ first: Char({ value: 'a' }), second: Nil })),
+            simplify(Cat(Char('a'), Nil)),
             Nil
         )).toBe(true)
         // c → c
         expect(equals(
-            simplify(Char({ value: 'a' })),
-            Char({ value: 'a' })
+            simplify(Char('a')),
+            Char('a')
         )).toBe(true)
         // Ɛ → Ɛ
         expect(equals(
@@ -749,101 +749,101 @@ describe('RegularLanguage', () => {
         )).toBe(true)
         // ¬¬L → L
         expect(equals(
-            simplify(Not({ lang: Not({ lang: Char({ value: 'a' }) }) })),
-            Char({ value: 'a' })
+            simplify(Not(Not(Char('a')))),
+            Char('a')
         )).toBe(true)
         // L? → L?
         expect(equals(
-            simplify(Opt({ lang: Char({ value: 'a' }) })),
-            Opt({ lang: Char({ value: 'a' }) })
+            simplify(Opt(Char('a'))),
+            Opt(Char('a'))
         )).toBe(true)
         // ∅? → Ɛ
         expect(equals(
-            simplify(Opt({ lang: Nil })),
+            simplify(Opt(Nil)),
             Empty
         )).toBe(true)
         // L+ → L+
         expect(equals(
-            simplify(Plus({ lang: Char({ value: 'a' }) })),
-            Plus({ lang: Char({ value: 'a' }) })
+            simplify(Plus(Char('a'))),
+            Plus(Char('a'))
         )).toBe(true)
         // ∅+ → ∅
         expect(equals(
-            simplify(Plus({ lang: Nil })),
+            simplify(Plus(Nil)),
             Nil
         )).toBe(true)
         // [a-a] → a
         expect(equals(
-            simplify(Range({ from: 'a', to: 'a' })),
-            Char({ value: 'a' })
+            simplify(Range('a', 'a')),
+            Char('a')
         )).toBe(true)
         // [a-b] → [a-b]
         expect(equals(
-            simplify(Range({ from: 'a', to: 'b' })),
-            Range({ from: 'a', to: 'b' })
+            simplify(Range('a', 'b')),
+            Range('a', 'b')
         )).toBe(true)
         // L{0} → Ɛ
         expect(equals(
-            simplify(Rep({ lang: Char({ value: 'a' }), n: 0 })),
+            simplify(Rep(Char('a'), 0)),
             Empty
         )).toBe(true)
         // L{1} → L
         expect(equals(
-            simplify(Rep({ lang: Char({ value: 'a' }), n: 1 })),
-            Char({ value: 'a' })
+            simplify(Rep(Char('a'), 1)),
+            Char('a')
         )).toBe(true)
         // L{∞} → L*
         expect(equals(
-            simplify(Rep({ lang: Char({ value: 'a' }), n: Infinity })),
-            Star({ lang: Char({ value: 'a' }) })
+            simplify(Rep(Char('a'), Infinity)),
+            Star(Char('a'))
         )).toBe(true)
         // L{n} → L{n}
         expect(equals(
-            simplify(Rep({ lang: Char({ value: 'a' }), n: 2 })),
-            Rep({ lang: Char({ value: 'a' }), n: 2 })
+            simplify(Rep(Char('a'), 2)),
+            Rep(Char('a'), 2)
         )).toBe(true)
         // ∅* → Ɛ
         expect(equals(
-            simplify(Star({ lang: Nil })),
+            simplify(Star(Nil)),
             Empty
         )).toBe(true)
         // L** → L*
         expect(equals(
-            simplify(Star({ lang: Star({ lang: Char({ value: 'a' }) }) })),
-            Star({ lang: Char({ value: 'a' }) })
+            simplify(Star(Star(Char('a')))),
+            Star(Char('a'))
         )).toBe(true)
         // Ɛ* → Ɛ
         expect(equals(
-            simplify(Star({ lang: Empty })),
+            simplify(Star(Empty)),
             Empty
         )).toBe(true)
         // "Foo" → "Foo"
         expect(equals(
-            simplify(Token({ value: 'Foo' })),
-            Token({ value: 'Foo' })
+            simplify(Token('Foo')),
+            Token('Foo')
         )).toBe(true)
     })
     test('toString', () => {
-        expect(toString(Alt({ left: Char({ value: 'a' }), right: Char({ value: 'b' }) }))).toBe('a|b')
+        expect(toString(Alt(Char('a'), Char('b')))).toBe('a|b')
         expect(toString(Any)).toBe('.')
-        expect(toString(Cat({ first: Char({ value: 'a' }), second: Char({ value: 'b' }) }))).toBe('ab')
-        expect(toString(Char({ value: 'a' }))).toBe('a')
+        expect(toString(Cat(Char('a'), Char('b')))).toBe('ab')
+        expect(toString(Char('a'))).toBe('a')
         expect(toString(Empty)).toBe('ε')
         expect(toString(Nil)).toBe('∅')
-        expect(toString(Not({ lang: Char({ value: 'a' }) }))).toBe('¬a')
-        expect(toString(Plus({ lang: Char({ value: 'a' }) }))).toBe('a+')
-        expect(toString(Range({ from: 'a', to: 'b' }))).toBe('[a-b]')
-        expect(toString(Rep({ lang: Char({ value: 'a' }), n: 2 }))).toBe('a{2}')
-        expect(toString(Star({ lang: Char({ value: 'a' }) }))).toBe('a*')
-        expect(toString(Token({ value: 'Foo' }))).toBe('"Foo"')
+        expect(toString(Not(Char('a')))).toBe('¬a')
+        expect(toString(Plus(Char('a')))).toBe('a+')
+        expect(toString(Range('a', 'b'))).toBe('[a-b]')
+        expect(toString(Rep(Char('a'), 2))).toBe('a{2}')
+        expect(toString(Star(Char('a')))).toBe('a*')
+        expect(toString(Token('Foo'))).toBe('"Foo"')
     })
     test('hex matching', () => {
         // match 6 digit hex
-        const hex = Alt({
-            left: Range({ from: '0', to: '9' }),
-            right: Range({ from: 'a', to: 'f' })
-        }),
-            hex6 = Rep({ lang: hex, n: 6 })
+        const hex = Alt(
+            Range('0', '9'),
+            Range('a', 'f')
+        ),
+            hex6 = Rep(hex, 6)
         expect(matches(hex6, '123456')).toBe(true)
         expect(matches(hex6, 'abcdef')).toBe(true)
         expect(matches(hex6, '123abc')).toBe(true)
@@ -856,14 +856,14 @@ describe('RegularLanguage', () => {
     })
     test('zip matching', () => {
         // match 5 digit zip
-        const digit = Range({ from: '0', to: '9' }),
-            zip = Cat({
-                first: Rep({ lang: digit, n: 5 }),
-                second: Cat({
-                    first: Char({ value: '-' }),
-                    second: Rep({ lang: digit, n: 4 })
-                })
-            })
+        const digit = Range('0', '9'),
+            zip = Cat(
+                Rep(digit, 5),
+                Cat(
+                    Char('-'),
+                    Rep(digit, 4)
+                )
+            )
         expect(matches(zip, '12345-1234')).toBe(true)
         expect(matches(zip, '12345-123')).toBe(false)
         expect(matches(zip, '1234-1234')).toBe(false)
@@ -871,16 +871,13 @@ describe('RegularLanguage', () => {
     })
     test('credit card matching', () => {
         // match 16 digit credit card
-        const digit = Range({ from: '0', to: '9' }),
-            digit4 = Rep({ lang: digit, n: 4 }),
-            component = Cat({
-                first: digit4,
-                second: Char({ value: '-' }),
-            }),
-            card = Cat({
-                first: Rep({ lang: component, n: 3, }),
-                second: digit4
-            })
+        const digit = Range('0', '9'),
+            digit4 = Rep(digit, 4),
+            component = Cat(digit4, Char('-')),
+            card = Cat(
+                Rep(component, 3),
+                digit4
+            )
 
         expect(matches(card, '1234-1234-1234-1234')).toBe(true)
         expect(matches(card, '1234-1234-1234-123')).toBe(false)
