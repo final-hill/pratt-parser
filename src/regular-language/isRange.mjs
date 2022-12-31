@@ -11,8 +11,6 @@ export const isRange = Trait({
     Empty() { return false; },
     Nil() { return false; },
     Not() { return false; },
-    Opt() { return false; },
-    Plus() { return false; },
     Range() { return true; },
     Rep() { return false; },
     Star() { return false; },

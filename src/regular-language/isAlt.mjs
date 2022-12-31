@@ -2,6 +2,8 @@ import { Trait } from "@mlhaufe/brevity/dist/index.mjs";
 
 /**
  * Determines if the regular language is the Alt language.
+ * @param {RegularLanguage} lang
+ * @returns {boolean}
  */
 export const isAlt = new Trait({
     Alt() { return true; },
@@ -11,8 +13,6 @@ export const isAlt = new Trait({
     Empty() { return false; },
     Nil() { return false; },
     Not() { return false; },
-    Opt() { return false; },
-    Plus() { return false; },
     Range() { return false; },
     Rep() { return false; },
     Star() { return false; },

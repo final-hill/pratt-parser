@@ -1,8 +1,6 @@
 import { Trait, apply } from "@mlhaufe/brevity/dist/Trait.mjs"
-import {
-    isAlt, isAny, isCat, isChar, isEmpty, isNil, isNot, isRange,
-    isRep, isOpt, isPlus, isStar, isToken
-} from './index.mjs'
+import { isAlt, isAny, isCat, isChar, isEmpty, isNil, isNot, isRange, isRep, isStar, isToken } from './index.mjs'
+import { force } from "./force.mjs"
 
 /**
  * Determines if two regular languages are equal
@@ -16,26 +14,42 @@ import {
  * [a,b] = [a,b]
  * L{n} = L{n}
  * L* = L*  if L = L
- * L? = L?  if L = L
  * "c" = "c"
- * L+ = L+  if L = L
  */
 export const equals = new Trait({
     Alt({ left, right }, other) {
-        return isAlt(other) && this[apply](left, other.left) && this[apply](right, other.right)
+        const [l, r, o] = [left, right, other].map(force)
+        return isAlt(o) && this[apply](l, o.left) && this[apply](r, o.right)
     },
-    Any({ }, other) { return isAny(other); },
+    Any({ }, other) { return isAny(force(other)); },
     Cat({ first, second }, other) {
-        return isCat(other) && this[apply](first, other.first) && this[apply](second, other.second)
+        const [f, s, o] = [first, second, other].map(force)
+        return isCat(o) && this[apply](f, o.first) && this[apply](s, o.second)
     },
-    Char({ value }, other) { return isChar(other) && value === other.value },
-    Empty({ }, other) { return isEmpty(other); },
-    Nil({ }, other) { return isNil(other); },
-    Not({ lang }, other) { return isNot(other) && this[apply](lang, other.lang) },
-    Opt({ lang }, other) { return isOpt(other) && this[apply](lang, other.lang) },
-    Plus({ lang }, other) { return isPlus(other) && this[apply](lang, other.lang) },
-    Range({ from, to }, other) { return isRange(other) && from === other.from && to === other.to },
-    Rep({ lang, n }, other) { return isRep(other) && n === other.n && this[apply](lang, other.lang) },
-    Star({ lang }, other) { return isStar(other) && this[apply](lang, other.lang) },
-    Token({ value }, other) { return isToken(other) && value === other.value }
+    Char({ value }, other) {
+        const o = force(other)
+        return isChar(o) && value === o.value
+    },
+    Empty({ }, other) { return isEmpty(force(other)); },
+    Nil({ }, other) { return isNil(force(other)); },
+    Not({ lang }, other) {
+        const [l, o] = [lang, other].map(force)
+        return isNot(o) && this[apply](l, o.lang)
+    },
+    Range({ from, to }, other) {
+        const o = force(other)
+        return isRange(o) && from === o.from && to === o.to
+    },
+    Rep({ lang, n }, other) {
+        const [l, o] = [lang, other].map(force)
+        return isRep(o) && n === o.n && this[apply](l, o.lang)
+    },
+    Star({ lang }, other) {
+        const [l, o] = [lang, other].map(force)
+        return isStar(o) && this[apply](l, o.lang)
+    },
+    Token({ value }, other) {
+        const o = force(other)
+        return isToken(o) && value === o.value
+    }
 })

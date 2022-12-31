@@ -2,6 +2,8 @@ import { Trait } from "@mlhaufe/brevity/dist/index.mjs"
 
 /**
  * Determines if the regular language is the Empty language.
+ * @param {RegularLanguage} lang
+ * @returns {boolean}
  */
 export const isEmpty = new Trait({
     Alt() { return false; },
@@ -11,8 +13,6 @@ export const isEmpty = new Trait({
     Empty() { return true; },
     Nil() { return false; },
     Not() { return false; },
-    Opt() { return false; },
-    Plus() { return false; },
     Range() { return false; },
     Rep() { return false; },
     Star() { return false; },

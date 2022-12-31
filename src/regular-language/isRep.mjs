@@ -11,8 +11,6 @@ export const isRep = new Trait({
     Empty() { return false; },
     Nil() { return false; },
     Not() { return false; },
-    Opt() { return false; },
-    Plus() { return false; },
     Range() { return false; },
     Rep() { return true; },
     Star() { return false; },

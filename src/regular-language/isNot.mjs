@@ -2,6 +2,8 @@ import { Trait } from "@mlhaufe/brevity/dist/index.mjs"
 
 /**
  * Determines if the regular language is the Not language.
+ * @param {RegularLanguage} lang
+ * @returns {boolean}
  */
 export const isNot = Trait({
     Alt() { return false; },
@@ -11,8 +13,6 @@ export const isNot = Trait({
     Empty() { return false; },
     Nil() { return false; },
     Not() { return true; },
-    Opt() { return false; },
-    Plus() { return false; },
     Range() { return false; },
     Rep() { return false; },
     Star() { return false; },

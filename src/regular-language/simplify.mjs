@@ -1,11 +1,8 @@
 import { Trait, apply } from "@mlhaufe/brevity/dist/Trait.mjs";
-import {
-    RegularLanguage, isAlt, isEmpty, isNil, isNot, isStar, height, equals
-} from "./index.mjs";
+import { RegularLanguage, isAlt, isEmpty, isNil, isNot, isStar, height, equals } from "./index.mjs";
+import { force } from "./force.mjs";
 
-const {
-    Alt, Any, Cat, Char, Empty, Nil, Not, Opt, Plus, Range, Rep, Star, Token
-} = RegularLanguage;
+const { Alt, Cat, Char, Empty, Nil, Not, Rep, Star } = RegularLanguage;
 
 /**
  * Converts the current language to simplest form possible
@@ -20,9 +17,9 @@ export const simplify = Trait({
     // L ∪ ∅ → L
     // (L ∪ M) ∪ N → L ∪ (M ∪ N)
     Alt({ left, right }) {
-        let [l, r] = [left, right].map(p => this[apply](p));
+        let [l, r] = [left, right].map(p => this[apply](force(p)));
         if (isAlt(l))
-            [l, r] = [l.left, Alt({ left: l.right, right: r })];
+            [l, r] = [l.left, Alt(l.right, r)];
         if (height(l) > height(r))
             [l, r] = [r, l];
         if (equals(l, r))
@@ -31,71 +28,65 @@ export const simplify = Trait({
             return r;
         else if (isNil(r))
             return l;
-        return Alt({ left: l, right: r });
+        if (l === left && r === right)
+            return arguments[0]
+        return Alt(l, r);
     },
     // . → .
-    Any() { return Any },
+    Any(self) { return self; },
     // PƐ → ƐP → P
     // ∅P → P∅ → ∅
     // Unused: (PQ)R → P(QR)
     // Unused: P(Q ∪ R) → PQ ∪ PR  (Is this actually simpler? Maybe the other direction?)
     // Unused: (Q ∪ R)P → QP ∪ RP  (Is this actually simpler? Maybe the other direction?)
     Cat({ first, second }) {
-        const [fst, snd] = [first, second].map(p => this[apply](p));
+        const [fst, snd] = [first, second].map(p => this[apply](force(p)));
         return isNil(fst) ? fst :
             isNil(snd) ? snd :
                 isEmpty(fst) ? snd :
                     isEmpty(snd) ? fst :
-                        Cat({ first: fst, second: snd });
+                        fst === first && snd === second ? arguments[0] :
+                            Cat(fst, snd);
     },
     // c → c
-    Char({ value }) { return Char({ value }); },
+    Char(self) { return self; },
     // Ɛ → Ɛ
-    Empty() { return Empty; },
+    Empty(self) { return self; },
     // ∅ → ∅
-    Nil() { return Nil; },
+    Nil(self) { return self; },
     // ¬¬L → L
     Not({ lang }) {
-        const simplified = this[apply](lang);
-        return isNot(simplified) ? simplified.lang : Not({ lang: simplified });
-    },
-    // L? → L?
-    // ∅? → Ɛ
-    Opt({ lang }) {
-        const simplified = this[apply](lang);
-        return isNil(simplified) ? Empty : Opt({ lang: simplified });
-    },
-    // L+ → L+
-    // ∅+ → ∅
-    Plus({ lang }) {
-        const simplified = this[apply](lang);
-        return isNil(simplified) ? Nil : Plus({ lang: simplified });
+        const simplified = this[apply](force(lang));
+        return isNot(simplified) ? simplified.lang :
+            simplified === lang ? arguments[0] : Not(simplified);
     },
     // [a-a] → a
     // [a-b] → [a-b]
     Range({ from, to }) {
-        return from === to ? Char({ value: from }) : Range({ from, to });
+        return from === to ? Char(from) : arguments[0];
     },
     // L{0} → Ɛ
     // L{1} → L
     // L{∞} → L*
     // L{n} → L{n}
     Rep({ lang, n }) {
-        const simplified = this[apply](lang);
+        const simplified = this[apply](force(lang));
         return n === 0 ? Empty :
             n === 1 ? simplified :
-                n === Infinity ? Star({ lang: simplified }) :
-                    Rep({ lang: simplified, n });
+                n === Infinity ? Star(simplified) :
+                    simplified === lang ? arguments[0] :
+                        Rep(simplified, n);
     },
     // ∅* → Ɛ
     // L** → L*
     // Ɛ* → Ɛ
     Star({ lang }) {
-        const simplified = this[apply](lang);
+        const simplified = this[apply](force(lang));
         return isNil(simplified) || isEmpty(simplified) ? Empty :
             isStar(simplified) ? simplified :
-                Star({ lang: simplified });
+                simplified === lang ? arguments[0] :
+                    Star(simplified);
     },
     // "Foo" → "Foo"
-    Token({ value }) { return Token({ value }); }
+    Token(self) { return self; }
 });

@@ -1,13 +1,10 @@
-
 import {
     alt, any, cat, char, empty, nil, not, opt, plus, range, rep, seq, star, token,
-    containsEmpty, deriv, equals, height, isAlt,
-    isAny, isCat, isChar, isEmpty, isNil, isNot, isOpt, isPlus, isRange,
-    isRep, isStar, isToken, matches, nilOrEmpty, simplify, toString
+    containsEmpty, deriv, equals, height, isAlt, isAny, isCat, isChar, isEmpty, isNil,
+    isNot, isRange, isRep, isStar, isToken, matches, nilOrEmpty, simplify, toString
 } from '../regular-language/index.mjs'
 
 describe('RegularLanguage', () => {
-
     test('containsEmpty', () => {
         expect(containsEmpty(alt('a', 'b'))).toBe(false)
         expect(containsEmpty(alt('a', empty))).toBe(true)
@@ -42,17 +39,6 @@ describe('RegularLanguage', () => {
 
         expect(containsEmpty(star('a'))).toBe(true)
         expect(containsEmpty(token('abc'))).toBe(false)
-    })
-    test('deriv of non char throws', () => {
-        expect(() => deriv(char('a'), 1)).toThrow()
-        expect(() => deriv(char('a'), 'a')).not.toThrow()
-        expect(() => deriv(char('a'), 'abc')).toThrow()
-        expect(() => deriv(char('a'), true)).toThrow()
-        expect(() => deriv(char('a'), null)).toThrow()
-        expect(() => deriv(char('a'), undefined)).toThrow()
-        expect(() => deriv(char('a'), {})).toThrow()
-        expect(() => deriv(char('a'), [])).toThrow()
-        expect(() => deriv(char('a'), () => { })).toThrow()
     })
     test('deriv alt', () => {
         // Dc(L1 ∪ L2) = Dc(L1) ∪ Dc(L2)
@@ -282,7 +268,7 @@ describe('RegularLanguage', () => {
         expect(height(nil)).toBe(1)
         expect(height(not('a'))).toBe(2)
         expect(height(opt('a'))).toBe(2)
-        expect(height(plus('a'))).toBe(2)
+        expect(height(plus('a'))).toBe(3)
         expect(height(range('a', 'b'))).toBe(1)
         expect(height(rep('a', 0))).toBe(2)
         expect(height(star('a'))).toBe(2)
@@ -297,7 +283,7 @@ describe('RegularLanguage', () => {
         expect(isAlt(empty)).toBe(false)
         expect(isAlt(nil)).toBe(false)
         expect(isAlt(not('a'))).toBe(false)
-        expect(isAlt(opt('a'))).toBe(false)
+        expect(isAlt(opt('a'))).toBe(true)
         expect(isAlt(plus('a'))).toBe(false)
         expect(isAlt(range('a', 'b'))).toBe(false)
         expect(isAlt(rep('a', 0))).toBe(false)
@@ -328,7 +314,7 @@ describe('RegularLanguage', () => {
         expect(isCat(nil)).toBe(false)
         expect(isCat(not('a'))).toBe(false)
         expect(isCat(opt('a'))).toBe(false)
-        expect(isCat(plus('a'))).toBe(false)
+        expect(isCat(plus('a'))).toBe(true)
         expect(isCat(range('a', 'b'))).toBe(false)
         expect(isCat(rep('a', 0))).toBe(false)
         expect(isCat(star('a'))).toBe(false)
@@ -393,36 +379,6 @@ describe('RegularLanguage', () => {
         expect(isNot(rep('a', 0))).toBe(false)
         expect(isNot(star('a'))).toBe(false)
         expect(isNot(token('a'))).toBe(false)
-    })
-    test('isOpt', () => {
-        expect(isOpt(alt('a', 'b'))).toBe(false)
-        expect(isOpt(any)).toBe(false)
-        expect(isOpt(cat('a', 'b'))).toBe(false)
-        expect(isOpt(char('a'))).toBe(false)
-        expect(isOpt(empty)).toBe(false)
-        expect(isOpt(nil)).toBe(false)
-        expect(isOpt(not('a'))).toBe(false)
-        expect(isOpt(opt('a'))).toBe(true)
-        expect(isOpt(plus('a'))).toBe(false)
-        expect(isOpt(range('a', 'b'))).toBe(false)
-        expect(isOpt(rep('a', 0))).toBe(false)
-        expect(isOpt(star('a'))).toBe(false)
-        expect(isOpt(token('a'))).toBe(false)
-    })
-    test('isPlus', () => {
-        expect(isPlus(alt('a', 'b'))).toBe(false)
-        expect(isPlus(any)).toBe(false)
-        expect(isPlus(cat('a', 'b'))).toBe(false)
-        expect(isPlus(char('a'))).toBe(false)
-        expect(isPlus(empty)).toBe(false)
-        expect(isPlus(nil)).toBe(false)
-        expect(isPlus(not('a'))).toBe(false)
-        expect(isPlus(opt('a'))).toBe(false)
-        expect(isPlus(plus('a'))).toBe(true)
-        expect(isPlus(range('a', 'b'))).toBe(false)
-        expect(isPlus(rep('a', 0))).toBe(false)
-        expect(isPlus(star('a'))).toBe(false)
-        expect(isPlus(token('a'))).toBe(false)
     })
     test('isRange', () => {
         expect(isRange(alt('a', 'b'))).toBe(false)
@@ -590,7 +546,7 @@ describe('RegularLanguage', () => {
         expect(equals(nilOrEmpty(not(empty)), nil)).toBe(true)
 
         // δ(P?) = ε
-        expect(equals(nilOrEmpty(opt('a')), empty)).toBe(true)
+        expect(equals(nilOrEmpty(opt('a')), alt(nilOrEmpty(char('a')), empty))).toBe(true)
 
         // δ([a-z]) = ∅
         expect(equals(nilOrEmpty(range('a', 'z')), nil)).toBe(true)
@@ -674,7 +630,7 @@ describe('RegularLanguage', () => {
         expect(toString(empty)).toBe('ε')
         expect(toString(nil)).toBe('∅')
         expect(toString(not('a'))).toBe('¬a')
-        expect(toString(plus('a'))).toBe('a+')
+        expect(toString(plus('a'))).toBe('a(a*)')
         expect(toString(range('a', 'b'))).toBe('[a-b]')
         expect(toString(rep('a', 2))).toBe('a{2}')
         expect(toString(star('a'))).toBe('a*')

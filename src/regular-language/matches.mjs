@@ -1,7 +1,5 @@
 import { all, apply, Trait } from "@mlhaufe/brevity/dist/Trait.mjs";
-import {
-    containsEmpty, equals, deriv, simplify
-} from "./index.mjs";
+import { containsEmpty, equals, deriv, simplify } from "./index.mjs";
 
 /**
  * Determines if the language matches the given string

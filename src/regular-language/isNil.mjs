@@ -2,6 +2,8 @@ import { Trait } from "@mlhaufe/brevity/dist/index.mjs"
 
 /**
  * Determine if the current expression is an instance of Nil
+ * @param {RegularLanguage} lang
+ * @returns {boolean}
  */
 export const isNil = new Trait({
     Alt() { return false; },
@@ -11,8 +13,6 @@ export const isNil = new Trait({
     Empty() { return false; },
     Nil() { return true; },
     Not() { return false; },
-    Opt() { return false; },
-    Plus() { return false; },
     Range() { return false; },
     Rep() { return false; },
     Star() { return false; },

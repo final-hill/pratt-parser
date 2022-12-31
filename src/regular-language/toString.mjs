@@ -1,43 +1,41 @@
 import { Trait, apply } from "@mlhaufe/brevity/dist/index.mjs";
 import { isAtomic } from "./index.mjs";
+import { force } from "./force.mjs";
 
 /**
  * Returns a string representation of the current expression
  */
 export const toString = new Trait({
     Alt({ left, right }) {
-        const leftString = isAtomic(left) ? `${this[apply](left)}` : `(${this[apply](left)})`,
-            rightString = isAtomic(right) ? `${this[apply](right)}` : `(${this[apply](right)})`;
+        const [l, r] = [force(left), force(right)],
+            leftString = isAtomic(l) ? `${this[apply](l)}` : `(${this[apply](l)})`,
+            rightString = isAtomic(r) ? `${this[apply](r)}` : `(${this[apply](r)})`;
         return `${leftString}|${rightString}`;
     },
     Any() { return '.' },
     Cat({ first, second }) {
-        const firstString = isAtomic(first) ? `${this[apply](first)}` : `(${this[apply](first)})`,
-            secondString = isAtomic(second) ? `${this[apply](second)}` : `(${this[apply](second)})`;
+        const [f, s] = [force(first), force(second)],
+            firstString = isAtomic(f) ? `${this[apply](f)}` : `(${this[apply](f)})`,
+            secondString = isAtomic(s) ? `${this[apply](s)}` : `(${this[apply](s)})`;
         return `${firstString}${secondString}`;
     },
     Char({ value }) { return value; },
     Empty() { return 'ε'; },
     Nil() { return '∅'; },
     Not({ lang }) {
-        const langString = isAtomic(lang) ? `${this[apply](lang)}` : `(${this[apply](lang)})`;
+        const l = force(lang),
+            langString = isAtomic(l) ? `${this[apply](l)}` : `(${this[apply](l)})`;
         return `¬${langString}`;
-    },
-    Opt({ lang }) {
-        const langString = isAtomic(lang) ? `${this[apply](lang)}` : `(${this[apply](lang)})`;
-        return `${langString}?`;
-    },
-    Plus({ lang }) {
-        const langString = isAtomic(lang) ? `${this[apply](lang)}` : `(${this[apply](lang)})`;
-        return `${langString}+`;
     },
     Range({ from, to }) { return `[${from}-${to}]`; },
     Rep({ lang, n }) {
-        const langString = isAtomic(lang) ? `${this[apply](lang)}` : `(${this[apply](lang)})`;
+        const l = force(lang),
+            langString = isAtomic(l) ? `${this[apply](l)}` : `(${this[apply](l)})`;
         return `${langString}{${n}}`;
     },
     Star({ lang }) {
-        const langString = isAtomic(lang) ? `${this[apply](lang)}` : `(${this[apply](lang)})`;
+        const l = force(lang),
+            langString = isAtomic(l) ? `${this[apply](l)}` : `(${this[apply](l)})`;
         return `${langString}*`;
     },
     Token({ value }) { return JSON.stringify(value); }

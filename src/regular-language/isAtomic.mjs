@@ -2,6 +2,8 @@ import { Trait } from "@mlhaufe/brevity/dist/index.mjs";
 
 /**
  * Determine if the expression is an instance of Char | Empty | Nil
+ * @param {RegularLanguage} lang
+ * @returns {boolean}
  */
 export const isAtomic = new Trait({
     Alt() { return false; },
@@ -11,8 +13,6 @@ export const isAtomic = new Trait({
     Empty() { return true; },
     Nil() { return true; },
     Not() { return false; },
-    Opt() { return false; },
-    Plus() { return false; },
     Range() { return false; },
     Rep() { return false; },
     Star() { return false; },

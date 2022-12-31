@@ -18,10 +18,6 @@ export const RegularLanguage = new Data({
     Nil: [],
     // ¬L - Represents the complement of a regular language.
     Not: ['lang'],
-    // L? - Represents the optional repetition of a regular language.
-    Opt: ['lang'],
-    // L+ - Represents the Kleene plus of a regular language.
-    Plus: ['lang'],
     // [a-b] - Represents a range of characters.
     Range: ['from', 'to'],
     // L{n} - Represents the repetition of a regular language n times.
