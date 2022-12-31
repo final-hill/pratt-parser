@@ -1,18 +1,11 @@
-import { Trait } from "@mlhaufe/brevity/dist/Trait.mjs"
+import { Trait, all } from "@mlhaufe/brevity/dist/Trait.mjs"
 
 /**
  * Determines if the regular language is the Star language.
+ * @param {RegularLanguage} lang
+ * @returns {boolean}
  */
 export const isStar = new Trait({
-    Alt() { return false; },
-    Any() { return false; },
-    Cat() { return false; },
-    Char() { return false; },
-    Empty() { return false; },
-    Nil() { return false; },
-    Not() { return false; },
-    Range() { return false; },
-    Rep() { return false; },
-    Star() { return true; },
-    Token() { return false; }
+    [all]() { return false; },
+    Star() { return true; }
 })
