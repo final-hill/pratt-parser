@@ -1,22 +1,9 @@
 import { Trait, apply } from "@mlhaufe/brevity/dist/Trait.mjs"
 import { isAlt, isAny, isCat, isChar, isEmpty, isNil, isNot, isRange, isRep, isStar, isToken } from './index.mjs'
-import { force } from "./force.mjs"
+import { force } from "../force.mjs"
+import { memoFix } from "../memoFix.mjs"
 
-/**
- * Determines if two regular languages are equal
- * L1 ∪ L2 = L2 ∪ L1   if L1 = L1 and L2 = L2
- * . = .
- * L1◦L2 = L1◦L2  if L1 = L1 and L2 = L2
- * c = c
- * ε = ε
- * ∅ = ∅
- * ¬L = ¬L  if L = L
- * [a,b] = [a,b]
- * L{n} = L{n}
- * L* = L*  if L = L
- * "c" = "c"
- */
-export const equals = new Trait({
+const _equals = new Trait({
     Alt({ left, right }, other) {
         const [l, r, o] = [left, right, other].map(force)
         return isAlt(o) && this[apply](l, o.left) && this[apply](r, o.right)
@@ -53,3 +40,19 @@ export const equals = new Trait({
         return isToken(o) && value === o.value
     }
 })
+
+/**
+ * Determines if two regular languages are equal
+ * L1 ∪ L2 = L2 ∪ L1   if L1 = L1 and L2 = L2
+ * . = .
+ * L1◦L2 = L1◦L2  if L1 = L1 and L2 = L2
+ * c = c
+ * ε = ε
+ * ∅ = ∅
+ * ¬L = ¬L  if L = L
+ * [a,b] = [a,b]
+ * L{n} = L{n}
+ * L* = L*  if L = L
+ * "c" = "c"
+ */
+export const equals = memoFix(false, _equals)

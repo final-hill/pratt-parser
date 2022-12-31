@@ -1,16 +1,12 @@
-import { Trait, apply } from "@mlhaufe/brevity/dist/Trait.mjs";
+import { Trait, all, apply } from "@mlhaufe/brevity/dist/Trait.mjs";
 import { RegularLanguage, isAlt, isEmpty, isNil, isNot, isStar, height, equals } from "./index.mjs";
-import { force } from "./force.mjs";
+import { force } from "../force.mjs";
+import { memoFix } from "../memoFix.mjs";
 
-const { Alt, Cat, Char, Empty, Nil, Not, Rep, Star } = RegularLanguage;
+const { Alt, Cat, Char, Empty, Not, Rep, Star } = RegularLanguage;
 
-/**
- * Converts the current language to simplest form possible
- * Where 'simplify' is defined as minimizing the height of the expression tree.
- * Additionally, this method will refactor the expression so that other
- * methods will be more likely to short-circuit.
- */
-export const simplify = Trait({
+const _simplify = Trait({
+    [all](self) { return self; },
     // L ∪ L → L
     // M ∪ L → L ∪ M
     // ∅ ∪ L → L
@@ -32,8 +28,6 @@ export const simplify = Trait({
             return arguments[0]
         return Alt(l, r);
     },
-    // . → .
-    Any(self) { return self; },
     // PƐ → ƐP → P
     // ∅P → P∅ → ∅
     // Unused: (PQ)R → P(QR)
@@ -45,15 +39,11 @@ export const simplify = Trait({
             isNil(snd) ? snd :
                 isEmpty(fst) ? snd :
                     isEmpty(snd) ? fst :
+                        // FIXME: if first|second are functions then fst|snd will be different
+                        //       and we'll return a new Cat
                         fst === first && snd === second ? arguments[0] :
                             Cat(fst, snd);
     },
-    // c → c
-    Char(self) { return self; },
-    // Ɛ → Ɛ
-    Empty(self) { return self; },
-    // ∅ → ∅
-    Nil(self) { return self; },
     // ¬¬L → L
     Not({ lang }) {
         const simplified = this[apply](force(lang));
@@ -86,7 +76,15 @@ export const simplify = Trait({
             isStar(simplified) ? simplified :
                 simplified === lang ? arguments[0] :
                     Star(simplified);
-    },
-    // "Foo" → "Foo"
-    Token(self) { return self; }
+    }
 });
+
+/**
+ * Converts the current language to simplest form possible
+ * Where 'simplify' is defined as minimizing the height of the expression tree.
+ * Additionally, this method will refactor the expression so that other
+ * methods will be more likely to short-circuit.
+ * @param {RegularLanguage} lang
+ * @returns {RegularLanguage}
+ */
+export const simplify = memoFix((self) => self, _simplify)

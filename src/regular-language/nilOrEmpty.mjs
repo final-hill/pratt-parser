@@ -1,6 +1,6 @@
 import { Trait, apply } from "@mlhaufe/brevity/dist/Trait.mjs";
 import { RegularLanguage, isNil } from "./index.mjs";
-import { force } from "./force.mjs";
+import { force } from "../force.mjs";
 
 const { Alt, Cat, Empty, Nil } = RegularLanguage;
 

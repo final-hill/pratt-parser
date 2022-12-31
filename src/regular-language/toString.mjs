@@ -1,11 +1,9 @@
 import { Trait, apply } from "@mlhaufe/brevity/dist/index.mjs";
 import { isAtomic } from "./index.mjs";
-import { force } from "./force.mjs";
+import { force } from "../force.mjs";
+import { memoFix } from "../memoFix.mjs";
 
-/**
- * Returns a string representation of the current expression
- */
-export const toString = new Trait({
+const _toString = new Trait({
     Alt({ left, right }) {
         const [l, r] = [force(left), force(right)],
             leftString = isAtomic(l) ? `${this[apply](l)}` : `(${this[apply](l)})`,
@@ -40,3 +38,10 @@ export const toString = new Trait({
     },
     Token({ value }) { return JSON.stringify(value); }
 })
+
+/**
+ * Returns a string representation of the current expression
+ * @param {RegularLanguage} lang
+ * @returns {string}
+ */
+export const toString = memoFix('', _toString);

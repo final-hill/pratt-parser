@@ -1,17 +1,11 @@
 import { Trait, apply } from "@mlhaufe/brevity/dist/Trait.mjs";
-import MultiKeyMap from '@final-hill/multi-key-map';
 import { containsEmpty, RegularLanguage } from "./index.mjs";
-import { force } from "./force.mjs";
+import { force } from "../force.mjs";
+import { memoFix } from "../memoFix.mjs";
 
 const { Alt, Cat, Char, Empty, Nil, Not, Rep, Star, Token } = RegularLanguage;
 
-/**
- * Computes the derivative of a regular language with respect to a character c.
- * The derivative is a new language where all strings that start with the character
- * are retained. The prefix character is then removed.
- * @see https://en.wikipedia.org/wiki/Brzozowski_derivative
- */
-const deriv = Trait({
+const _deriv = Trait({
     // Dc(L1 ∪ L2) = Dc(L1) ∪ Dc(L2)
     Alt({ left, right }, c) {
         return Alt(() => this[apply](left, c), () => this[apply](right, c))
@@ -75,14 +69,10 @@ const deriv = Trait({
     }
 })
 
-// memoize deriv calls to avoid recomputing the same derivations
-const memo = new MultiKeyMap();
-const derivMemo = Trait(deriv, {
-    [apply](lang, c) {
-        if (!memo.has(lang, c))
-            memo.set(lang, c, deriv[apply].call(this, lang, c));
-        return memo.get(lang, c);
-    }
-})
-
-export { derivMemo as deriv };
+/**
+ * Computes the derivative of a regular language with respect to a character c.
+ * The derivative is a new language where all strings that start with the character
+ * are retained. The prefix character is then removed.
+ * @see https://en.wikipedia.org/wiki/Brzozowski_derivative
+ */
+export const deriv = memoFix(Nil, _deriv);

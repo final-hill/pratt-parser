@@ -1,22 +1,8 @@
 import { Trait, apply } from "@mlhaufe/brevity/dist/Trait.mjs"
-import { force } from './force.mjs'
+import { force } from '../force.mjs'
+import { memoFix } from "../memoFix.mjs"
 
-/**
- * Determines if the regular language contains the Empty language.
- * δ(L1 | L2) = δ(L1) | δ(L2)
- * δ(.) = true
- * δ(L1◦L2) = δ(L1) && δ(L2)
- * δ(c) = false
- * δ(ε) = true
- * δ(∅) = false
- * δ(!L) = !δ(L)
- * δ([a-z]) = false
- * δ(L{0}) = true
- * δ(L{n}) = δ(L)
- * δ(L*) = true
- * δ("token") = false
- */
-export const containsEmpty = new Trait({
+const _containsEmpty = new Trait({
     Alt({ left, right }) {
         return this[apply](force(left)) || this[apply](force(right))
     },
@@ -35,5 +21,24 @@ export const containsEmpty = new Trait({
         return n === 0 || this[apply](force(lang))
     },
     Star() { return true; },
-    Token({ value }) { return false; }
+    Token() { return false; }
 })
+
+/**
+ * Determines if the regular language contains the Empty language.
+ * δ(L1 | L2) = δ(L1) | δ(L2)
+ * δ(.) = true
+ * δ(L1◦L2) = δ(L1) && δ(L2)
+ * δ(c) = false
+ * δ(ε) = true
+ * δ(∅) = false
+ * δ(!L) = !δ(L)
+ * δ([a-z]) = false
+ * δ(L{0}) = true
+ * δ(L{n}) = δ(L)
+ * δ(L*) = true
+ * δ("token") = false
+ * @param {RegularLanguage} lang
+ * @returns {boolean}
+ */
+export const containsEmpty = memoFix(false, _containsEmpty)
