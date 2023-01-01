@@ -27,6 +27,10 @@
                 "${fileBasenameNoExtension}"
             ],
             "internalConsoleOptions": "openOnSessionStart",
+            "skipFiles": [
+                "${workspaceFolder}/node_modules/**",
+                "<node_internals>/**"
+            ]
         }
     ]
 }
