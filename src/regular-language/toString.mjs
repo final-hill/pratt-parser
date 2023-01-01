@@ -1,35 +1,21 @@
 import { Trait, apply, memoFix } from "@mlhaufe/brevity/dist/index.mjs";
-import { isAtomic } from "./index.mjs";
 
 const _toString = new Trait({
     Alt({ left, right }) {
-        const leftString = isAtomic(left) ? `${this[apply](left)}` : `(${this[apply](left)})`,
-            rightString = isAtomic(right) ? `${this[apply](right)}` : `(${this[apply](right)})`;
-        return `${leftString}|${rightString}`;
+        return `Alt(${this[apply](left)}, ${this[apply](right)})`;
     },
-    Any() { return '.' },
-    Cat({ first, second }) {
-        const firstString = isAtomic(first) ? `${this[apply](first)}` : `(${this[apply](first)})`,
-            secondString = isAtomic(second) ? `${this[apply](second)}` : `(${this[apply](second)})`;
-        return `${firstString}${secondString}`;
+    Any() { return 'Any' },
+    Char({ value }) { return `Char(${value})`; },
+    Empty() { return 'Empty'; },
+    Nil() { return 'Nil'; },
+    Not({ lang }) { return `Not(${this[apply](lang)})`; },
+    Range({ from, to }) { return `Range(${from}, ${to})`; },
+    Rep({ lang, n }) { return `Rep(${this[apply](lang)}, ${n})`; },
+    Seq({ first, second }) {
+        return `Seq(${this[apply](first)}, ${this[apply](second)})`;
     },
-    Char({ value }) { return value; },
-    Empty() { return 'ε'; },
-    Nil() { return '∅'; },
-    Not({ lang }) {
-        const langString = isAtomic(lang) ? `${this[apply](lang)}` : `(${this[apply](lang)})`;
-        return `¬${langString}`;
-    },
-    Range({ from, to }) { return `[${from}-${to}]`; },
-    Rep({ lang, n }) {
-        const langString = isAtomic(lang) ? `${this[apply](lang)}` : `(${this[apply](lang)})`;
-        return `${langString}{${n}}`;
-    },
-    Star({ lang }) {
-        const langString = isAtomic(lang) ? `${this[apply](lang)}` : `(${this[apply](lang)})`;
-        return `${langString}*`;
-    },
-    Token({ value }) { return JSON.stringify(value); }
+    Star({ lang }) { return `Star(${this[apply](lang)})`; },
+    Token({ value }) { return `Token(${value})`; }
 })
 
 /**
@@ -37,4 +23,4 @@ const _toString = new Trait({
  * @param {RegularLanguage} lang
  * @returns {string}
  */
-export const toString = memoFix(_toString, '');
+export const toString = memoFix(_toString, '$');

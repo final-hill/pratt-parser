@@ -1,14 +1,11 @@
 import { Trait, apply, memoFix } from "@mlhaufe/brevity/dist/index.mjs"
-import { isAlt, isAny, isCat, isChar, isEmpty, isNil, isNot, isRange, isRep, isStar, isToken } from './index.mjs'
+import { isAlt, isAny, isSeq, isChar, isEmpty, isNil, isNot, isRange, isRep, isStar, isToken } from './index.mjs'
 
 const _equals = new Trait({
     Alt({ left, right }, other) {
         return isAlt(other) && this[apply](left, other.left) && this[apply](right, other.right)
     },
     Any(_, other) { return isAny(other); },
-    Cat({ first, second }, other) {
-        return isCat(other) && this[apply](first, other.first) && this[apply](second, other.second)
-    },
     Char({ value }, other) {
         return isChar(other) && value === other.value
     },
@@ -22,6 +19,9 @@ const _equals = new Trait({
     },
     Rep({ lang, n }, other) {
         return isRep(other) && n === other.n && this[apply](lang, other.lang)
+    },
+    Seq({ first, second }, other) {
+        return isSeq(other) && this[apply](first, other.first) && this[apply](second, other.second)
     },
     Star({ lang }, other) {
         return isStar(other) && this[apply](lang, other.lang)

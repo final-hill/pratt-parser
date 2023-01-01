@@ -1,7 +1,7 @@
 import { Trait, apply, memoFix } from "@mlhaufe/brevity/dist/index.mjs";
 import { containsEmpty, RegularLanguage } from "./index.mjs";
 
-const { Alt, Cat, Char, Empty, Nil, Not, Rep, Star, Token } = RegularLanguage;
+const { Alt, Char, Empty, Nil, Not, Rep, Seq, Star, Token } = RegularLanguage;
 
 const _deriv = Trait({
     // Dc(L1 ∪ L2) = Dc(L1) ∪ Dc(L2)
@@ -10,13 +10,6 @@ const _deriv = Trait({
     },
     // Dc(.) = ε
     Any() { return Empty },
-    // Dc(L1◦L2) =  Dc(L1)◦L2           if ε ∉ L1
-    //           =  Dc(L1)◦L2 ∪ Dc(L2)  if ε ∈ L1
-    Cat(self, c) {
-        const fst = self.first,
-            d1Cat = Cat(this[apply](fst, c), () => self.second);
-        return containsEmpty(fst) ? Alt(d1Cat, () => this[apply](self.second, c)) : d1Cat
-    },
     // Dc(c) = ε
     // Dc(c') = ∅
     Char({ value }, c) { return value === c ? Empty : Nil },
@@ -47,12 +40,19 @@ const _deriv = Trait({
         } else {
             if (n === 1)
                 return this[apply](lang, c)
-            return Cat(() => this[apply](lang, c), Rep(lang, n - 1))
+            return Seq(() => this[apply](lang, c), Rep(lang, n - 1))
         }
+    },
+    // Dc(L1◦L2) =  Dc(L1)◦L2           if ε ∉ L1
+    //           =  Dc(L1)◦L2 ∪ Dc(L2)  if ε ∈ L1
+    Seq(self, c) {
+        const fst = self.first,
+            d1Seq = Seq(this[apply](fst, c), () => self.second);
+        return containsEmpty(fst) ? Alt(d1Seq, () => this[apply](self.second, c)) : d1Seq
     },
     // Dc(L*) = Dc(L)◦L*
     Star({ lang }, c) {
-        return Cat(() => this[apply](lang, c), Star(lang))
+        return Seq(() => this[apply](lang, c), Star(lang))
     },
     // Dc("") = Dc(ε)
     // Dc("c") = Dc(c)
@@ -60,7 +60,7 @@ const _deriv = Trait({
     Token({ value }, c) {
         return value.length == 0 ? this[apply](Empty, c) :
             value.length == 1 ? this[apply](Char(value), c) :
-                Cat(
+                Seq(
                     this[apply](Char(value[0]), c),
                     Token(value.substring(1))
                 )

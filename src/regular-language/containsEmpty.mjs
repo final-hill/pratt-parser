@@ -5,9 +5,6 @@ const _containsEmpty = new Trait({
         return this[apply](left) || this[apply](right)
     },
     Any() { return true; },
-    Cat({ first, second }) {
-        return this[apply](first) && this[apply](second)
-    },
     Char() { return false; },
     Empty() { return true; },
     Nil() { return false; },
@@ -17,6 +14,9 @@ const _containsEmpty = new Trait({
     Range() { return false; },
     Rep({ lang, n }) {
         return n === 0 || this[apply](lang)
+    },
+    Seq({ first, second }) {
+        return this[apply](first) && this[apply](second)
     },
     Star() { return true; },
     Token() { return false; }

@@ -1,6 +1,6 @@
 import {
-    alt, any, cat, char, empty, nil, not, opt, plus, range, rep, seq, star, token,
-    containsEmpty, deriv, equals, height, isAlt, isAny, isCat, isChar, isEmpty, isNil,
+    alt, any, char, empty, nil, not, opt, plus, range, rep, seq, star, token,
+    containsEmpty, deriv, equals, height, isAlt, isAny, isSeq, isChar, isEmpty, isNil,
     isNot, isRange, isRep, isStar, isToken, matches, simplify, toString
 } from '../regular-language/index.mjs'
 
@@ -11,11 +11,6 @@ describe('RegularLanguage', () => {
         expect(containsEmpty(alt(empty, 'a'))).toBe(true)
 
         expect(containsEmpty(any)).toBe(true)
-
-        expect(containsEmpty(cat('a', 'b'))).toBe(false)
-        expect(containsEmpty(cat(empty, empty))).toBe(true)
-        expect(containsEmpty(cat(star('a'), empty))).toBe(true)
-        expect(containsEmpty(cat(empty, any))).toBe(true)
 
         expect(containsEmpty(char('a'))).toBe(false)
         expect(containsEmpty(empty)).toBe(true)
@@ -37,7 +32,13 @@ describe('RegularLanguage', () => {
         expect(containsEmpty(rep('a', 0))).toBe(true)
         expect(containsEmpty(rep('a', 1))).toBe(false)
 
+        expect(containsEmpty(seq('a', 'b'))).toBe(false)
+        expect(containsEmpty(seq(empty, empty))).toBe(true)
+        expect(containsEmpty(seq(star('a'), empty))).toBe(true)
+        expect(containsEmpty(seq(empty, any))).toBe(true)
+
         expect(containsEmpty(star('a'))).toBe(true)
+
         expect(containsEmpty(token('abc'))).toBe(false)
     })
     test('deriv alt', () => {
@@ -67,26 +68,26 @@ describe('RegularLanguage', () => {
             equals(deriv(any, 'a'), empty)
         ).toBe(true)
     })
-    test('deriv cat', () => {
+    test('deriv seq', () => {
         // Dc(L1◦L2) =  Dc(L1)◦L2           if ε ∉ L1
         //           =  Dc(L1)◦L2 ∪ Dc(L2)  if ε ∈ L1
 
         // Dc(L1◦L2) =  Dc(L1)◦L2
-        const ab = cat('a', 'b')
+        const ab = seq('a', 'b')
         expect(
-            equals(deriv(ab, 'a'), cat(deriv(char('a'), 'a'), 'b'))
+            equals(deriv(ab, 'a'), seq(deriv(char('a'), 'a'), 'b'))
         ).toBe(true)
         expect(
-            equals(deriv(ab, 'b'), cat(deriv(char('a'), 'b'), 'b'))
+            equals(deriv(ab, 'b'), seq(deriv(char('a'), 'b'), 'b'))
         ).toBe(true)
         expect(
-            equals(deriv(ab, 'c'), cat(deriv(char('a'), 'c'), 'b'))
+            equals(deriv(ab, 'c'), seq(deriv(char('a'), 'c'), 'b'))
         ).toBe(true)
         // Dc(L1◦L2) =  Dc(L1)◦L2 ∪ Dc(L2)
-        const eb = cat(empty, 'b')
+        const eb = seq(empty, 'b')
         expect(
             equals(deriv(eb, 'a'),
-                alt(cat(deriv(empty, 'a'), 'b'), deriv(char('b'), 'a'))
+                alt(seq(deriv(empty, 'a'), 'b'), deriv(char('b'), 'a'))
             )
         ).toBe(true)
     })
@@ -133,7 +134,7 @@ describe('RegularLanguage', () => {
         const L = char('a')
         // Dc(L+) = Dc(L)◦L*
         expect(
-            equals(deriv(plus(L), 'a'), cat(deriv(L, 'a'), star(L)))
+            equals(deriv(plus(L), 'a'), seq(deriv(L, 'a'), star(L)))
         ).toBe(true)
     })
     test('deriv range', () => {
@@ -167,14 +168,14 @@ describe('RegularLanguage', () => {
 
         // Dc(L{n}) = Dc(L)◦L{n-1}
         expect(
-            equals(deriv(rep(L, 2), 'a'), cat(deriv(L, 'a'), rep(L, 1)))
+            equals(deriv(rep(L, 2), 'a'), seq(deriv(L, 'a'), rep(L, 1)))
         ).toBe(true)
     })
     test('deriv star', () => {
         const L = char('a')
         // Dc(L*) = Dc(L)◦L*
         expect(
-            equals(deriv(star(L), 'a'), cat(deriv(L, 'a'), star(L)))
+            equals(deriv(star(L), 'a'), seq(deriv(L, 'a'), star(L)))
         ).toBe(true)
     })
     test('deriv token', () => {
@@ -188,7 +189,7 @@ describe('RegularLanguage', () => {
         ).toBe(true)
         // Dc("abc") = Dc("a")◦"bc"
         expect(
-            equals(deriv(token('abc'), 'a'), cat(deriv(token('a'), 'a'), 'bc'))
+            equals(deriv(token('abc'), 'a'), seq(deriv(token('a'), 'a'), 'bc'))
         ).toBe(true)
     })
     test('equals', () => {
@@ -200,10 +201,10 @@ describe('RegularLanguage', () => {
         // . = .
         expect(equals(any, any)).toBe(true)
         // . ≠ a
-        expect(equals(any, cat('a', 'b'))).toBe(false)
+        expect(equals(any, seq('a', 'b'))).toBe(false)
 
         // a◦b = a◦b
-        expect(equals(cat('a', 'b'), cat('a', 'b'))).toBe(true)
+        expect(equals(seq('a', 'b'), seq('a', 'b'))).toBe(true)
         // a◦b ≠ a◦.
         expect(equals(char('a'), any)).toBe(false)
 
@@ -262,7 +263,7 @@ describe('RegularLanguage', () => {
     test('height', () => {
         expect(height(alt('a', 'b'))).toBe(2)
         expect(height(any)).toBe(1)
-        expect(height(cat('a', 'b'))).toBe(2)
+        expect(height(seq('a', 'b'))).toBe(2)
         expect(height(char('a'))).toBe(1)
         expect(height(empty)).toBe(1)
         expect(height(nil)).toBe(1)
@@ -278,7 +279,7 @@ describe('RegularLanguage', () => {
     test('isAlt', () => {
         expect(isAlt(alt('a', 'b'))).toBe(true)
         expect(isAlt(any)).toBe(false)
-        expect(isAlt(cat('a', 'b'))).toBe(false)
+        expect(isAlt(seq('a', 'b'))).toBe(false)
         expect(isAlt(char('a'))).toBe(false)
         expect(isAlt(empty)).toBe(false)
         expect(isAlt(nil)).toBe(false)
@@ -293,7 +294,7 @@ describe('RegularLanguage', () => {
     test('isAny', () => {
         expect(isAny(alt('a', 'b'))).toBe(false)
         expect(isAny(any)).toBe(true)
-        expect(isAny(cat('a', 'b'))).toBe(false)
+        expect(isAny(seq('a', 'b'))).toBe(false)
         expect(isAny(char('a'))).toBe(false)
         expect(isAny(empty)).toBe(false)
         expect(isAny(nil)).toBe(false)
@@ -305,25 +306,25 @@ describe('RegularLanguage', () => {
         expect(isAny(star('a'))).toBe(false)
         expect(isAny(token('a'))).toBe(false)
     })
-    test('isCat', () => {
-        expect(isCat(alt('a', 'b'))).toBe(false)
-        expect(isCat(any)).toBe(false)
-        expect(isCat(cat('a', 'b'))).toBe(true)
-        expect(isCat(char('a'))).toBe(false)
-        expect(isCat(empty)).toBe(false)
-        expect(isCat(nil)).toBe(false)
-        expect(isCat(not('a'))).toBe(false)
-        expect(isCat(opt('a'))).toBe(false)
-        expect(isCat(plus('a'))).toBe(true)
-        expect(isCat(range('a', 'b'))).toBe(false)
-        expect(isCat(rep('a', 0))).toBe(false)
-        expect(isCat(star('a'))).toBe(false)
-        expect(isCat(token('a'))).toBe(false)
+    test('isSeq', () => {
+        expect(isSeq(alt('a', 'b'))).toBe(false)
+        expect(isSeq(any)).toBe(false)
+        expect(isSeq(seq('a', 'b'))).toBe(true)
+        expect(isSeq(char('a'))).toBe(false)
+        expect(isSeq(empty)).toBe(false)
+        expect(isSeq(nil)).toBe(false)
+        expect(isSeq(not('a'))).toBe(false)
+        expect(isSeq(opt('a'))).toBe(false)
+        expect(isSeq(plus('a'))).toBe(true)
+        expect(isSeq(range('a', 'b'))).toBe(false)
+        expect(isSeq(rep('a', 0))).toBe(false)
+        expect(isSeq(star('a'))).toBe(false)
+        expect(isSeq(token('a'))).toBe(false)
     })
     test('isChar', () => {
         expect(isChar(alt('a', 'b'))).toBe(false)
         expect(isChar(any)).toBe(false)
-        expect(isChar(cat('a', 'b'))).toBe(false)
+        expect(isChar(seq('a', 'b'))).toBe(false)
         expect(isChar(char('a'))).toBe(true)
         expect(isChar(empty)).toBe(false)
         expect(isChar(nil)).toBe(false)
@@ -338,7 +339,7 @@ describe('RegularLanguage', () => {
     test('isEmpty', () => {
         expect(isEmpty(alt('a', 'b'))).toBe(false)
         expect(isEmpty(any)).toBe(false)
-        expect(isEmpty(cat('a', 'b'))).toBe(false)
+        expect(isEmpty(seq('a', 'b'))).toBe(false)
         expect(isEmpty(char('a'))).toBe(false)
         expect(isEmpty(empty)).toBe(true)
         expect(isEmpty(nil)).toBe(false)
@@ -353,7 +354,7 @@ describe('RegularLanguage', () => {
     test('isNil', () => {
         expect(isNil(alt('a', 'b'))).toBe(false)
         expect(isNil(any)).toBe(false)
-        expect(isNil(cat('a', 'b'))).toBe(false)
+        expect(isNil(seq('a', 'b'))).toBe(false)
         expect(isNil(char('a'))).toBe(false)
         expect(isNil(empty)).toBe(false)
         expect(isNil(nil)).toBe(true)
@@ -368,7 +369,7 @@ describe('RegularLanguage', () => {
     test('isNot', () => {
         expect(isNot(alt('a', 'b'))).toBe(false)
         expect(isNot(any)).toBe(false)
-        expect(isNot(cat('a', 'b'))).toBe(false)
+        expect(isNot(seq('a', 'b'))).toBe(false)
         expect(isNot(char('a'))).toBe(false)
         expect(isNot(empty)).toBe(false)
         expect(isNot(nil)).toBe(false)
@@ -383,7 +384,7 @@ describe('RegularLanguage', () => {
     test('isRange', () => {
         expect(isRange(alt('a', 'b'))).toBe(false)
         expect(isRange(any)).toBe(false)
-        expect(isRange(cat('a', 'b'))).toBe(false)
+        expect(isRange(seq('a', 'b'))).toBe(false)
         expect(isRange(char('a'))).toBe(false)
         expect(isRange(empty)).toBe(false)
         expect(isRange(nil)).toBe(false)
@@ -398,7 +399,7 @@ describe('RegularLanguage', () => {
     test('isRep', () => {
         expect(isRep(alt('a', 'b'))).toBe(false)
         expect(isRep(any)).toBe(false)
-        expect(isRep(cat('a', 'b'))).toBe(false)
+        expect(isRep(seq('a', 'b'))).toBe(false)
         expect(isRep(char('a'))).toBe(false)
         expect(isRep(empty)).toBe(false)
         expect(isRep(nil)).toBe(false)
@@ -413,7 +414,7 @@ describe('RegularLanguage', () => {
     test('isStar', () => {
         expect(isStar(alt('a', 'b'))).toBe(false)
         expect(isStar(any)).toBe(false)
-        expect(isStar(cat('a', 'b'))).toBe(false)
+        expect(isStar(seq('a', 'b'))).toBe(false)
         expect(isStar(char('a'))).toBe(false)
         expect(isStar(empty)).toBe(false)
         expect(isStar(nil)).toBe(false)
@@ -428,7 +429,7 @@ describe('RegularLanguage', () => {
     test('isToken', () => {
         expect(isToken(alt('a', 'b'))).toBe(false)
         expect(isToken(any)).toBe(false)
-        expect(isToken(cat('a', 'b'))).toBe(false)
+        expect(isToken(seq('a', 'b'))).toBe(false)
         expect(isToken(char('a'))).toBe(false)
         expect(isToken(empty)).toBe(false)
         expect(isToken(nil)).toBe(false)
@@ -450,9 +451,9 @@ describe('RegularLanguage', () => {
         // . matches "a"
         expect(matches(any, 'a')).toBe(true)
         // a◦b matches "ab"
-        expect(matches(cat('a', 'b'), 'ab')).toBe(true)
+        expect(matches(seq('a', 'b'), 'ab')).toBe(true)
         // a◦b does not match "a"
-        expect(matches(cat('a', 'b'), 'a')).toBe(false)
+        expect(matches(seq('a', 'b'), 'a')).toBe(false)
         // a matches "a"
         expect(matches(char('a'), 'a')).toBe(true)
         // a does not match "b"
@@ -527,11 +528,11 @@ describe('RegularLanguage', () => {
         // . → .
         expect(equals(simplify(any), any)).toBe(true)
         // PƐ → ƐP → P
-        expect(equals(simplify(cat('a', empty)), char('a'))).toBe(true)
-        expect(equals(simplify(cat(empty, 'a')), char('a'))).toBe(true)
+        expect(equals(simplify(seq('a', empty)), char('a'))).toBe(true)
+        expect(equals(simplify(seq(empty, 'a')), char('a'))).toBe(true)
         // ∅P → P∅ → ∅
-        expect(equals(simplify(cat(nil, 'a')), nil)).toBe(true)
-        expect(equals(simplify(cat('a', nil)), nil)).toBe(true)
+        expect(equals(simplify(seq(nil, 'a')), nil)).toBe(true)
+        expect(equals(simplify(seq('a', nil)), nil)).toBe(true)
         // c → c
         expect(equals(simplify(char('a')), char('a'))).toBe(true)
         // Ɛ → Ɛ
@@ -570,18 +571,18 @@ describe('RegularLanguage', () => {
         expect(equals(simplify(token('Foo')), token('Foo'))).toBe(true)
     })
     test('toString', () => {
-        expect(toString(alt('a', 'b'))).toBe('a|b')
-        expect(toString(any)).toBe('.')
-        expect(toString(cat('a', 'b'))).toBe('ab')
-        expect(toString(char('a'))).toBe('a')
-        expect(toString(empty)).toBe('ε')
-        expect(toString(nil)).toBe('∅')
-        expect(toString(not('a'))).toBe('¬a')
-        expect(toString(plus('a'))).toBe('a(a*)')
-        expect(toString(range('a', 'b'))).toBe('[a-b]')
-        expect(toString(rep('a', 2))).toBe('a{2}')
-        expect(toString(star('a'))).toBe('a*')
-        expect(toString(token('Foo'))).toBe('"Foo"')
+        expect(toString(alt('a', 'b'))).toBe('Alt(Char(a), Char(b))')
+        expect(toString(any)).toBe('Any')
+        expect(toString(seq('a', 'b'))).toBe('Seq(Char(a), Char(b))')
+        expect(toString(char('a'))).toBe('Char(a)')
+        expect(toString(empty)).toBe('Empty')
+        expect(toString(nil)).toBe('Nil')
+        expect(toString(not('a'))).toBe('Not(Char(a))')
+        expect(toString(plus('a'))).toBe('Seq(Char(a), Star(Char(a)))')
+        expect(toString(range('a', 'b'))).toBe('Range(a, b)')
+        expect(toString(rep('a', 2))).toBe('Rep(Char(a), 2)')
+        expect(toString(star('a'))).toBe('Star(Char(a))')
+        expect(toString(token('Foo'))).toBe('Token(Foo)')
     })
     test('hex matching', () => {
         // match 6 digit hex
@@ -614,8 +615,8 @@ describe('RegularLanguage', () => {
         // match 16 digit credit card
         const digit = range('0', '9'),
             digit4 = rep(digit, 4),
-            component = cat(digit4, '-'),
-            card = cat(rep(component, 3), digit4)
+            component = seq(digit4, '-'),
+            card = seq(rep(component, 3), digit4)
 
         expect(matches(card, '1234-1234-1234-1234')).toBe(true)
         expect(matches(card, '1234-1234-1234-123')).toBe(false)

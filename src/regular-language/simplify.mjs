@@ -1,7 +1,7 @@
 import { Trait, all, apply, memoFix } from "@mlhaufe/brevity/dist/index.mjs";
 import { RegularLanguage, isAlt, isEmpty, isNil, isNot, isStar, height, equals } from "./index.mjs";
 
-const { Alt, Cat, Char, Empty, Not, Rep, Star } = RegularLanguage;
+const { Alt, Char, Empty, Not, Rep, Seq, Star } = RegularLanguage;
 
 const _simplify = Trait({
     [all](self) { return self; },
@@ -26,20 +26,6 @@ const _simplify = Trait({
             return arguments[0]
         return Alt(l, r);
     },
-    // PƐ → ƐP → P
-    // ∅P → P∅ → ∅
-    // Unused: (PQ)R → P(QR)
-    // Unused: P(Q ∪ R) → PQ ∪ PR  (Is this actually simpler? Maybe the other direction?)
-    // Unused: (Q ∪ R)P → QP ∪ RP  (Is this actually simpler? Maybe the other direction?)
-    Cat({ first, second }) {
-        const [fst, snd] = [first, second]
-        return isNil(fst) ? fst :
-            isNil(snd) ? snd :
-                isEmpty(fst) ? snd :
-                    isEmpty(snd) ? fst :
-                        fst === first && snd === second ? arguments[0] :
-                            Cat(fst, snd);
-    },
     // ¬¬L → L
     Not({ lang }) {
         const simplified = this[apply](lang);
@@ -62,6 +48,20 @@ const _simplify = Trait({
                 n === Infinity ? Star(simplified) :
                     simplified === lang ? arguments[0] :
                         Rep(simplified, n);
+    },
+    // PƐ → ƐP → P
+    // ∅P → P∅ → ∅
+    // Unused: (PQ)R → P(QR)
+    // Unused: P(Q ∪ R) → PQ ∪ PR  (Is this actually simpler? Maybe the other direction?)
+    // Unused: (Q ∪ R)P → QP ∪ RP  (Is this actually simpler? Maybe the other direction?)
+    Seq({ first, second }) {
+        const [fst, snd] = [first, second]
+        return isNil(fst) ? fst :
+            isNil(snd) ? snd :
+                isEmpty(fst) ? snd :
+                    isEmpty(snd) ? fst :
+                        fst === first && snd === second ? arguments[0] :
+                            Seq(fst, snd);
     },
     // ∅* → Ɛ
     // L** → L*

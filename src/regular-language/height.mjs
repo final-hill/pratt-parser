@@ -5,11 +5,11 @@ const _height = new Trait({
     Alt({ left, right }) {
         return Math.max(this[apply](left), this[apply](right)) + 1;
     },
-    Cat({ first, second }) {
-        return Math.max(this[apply](first), this[apply](second)) + 1;
-    },
     Not({ lang }) { return this[apply](lang) + 1; },
     Rep({ lang }) { return this[apply](lang) + 1; },
+    Seq({ first, second }) {
+        return Math.max(this[apply](first), this[apply](second)) + 1;
+    },
     Star({ lang }) { return this[apply](lang) + 1; }
 })
 

@@ -1,11 +1,11 @@
 import { Trait, all } from "@mlhaufe/brevity/dist/index.mjs";
 
 /**
- * Determines if the regular language is the Cat language.
+ * Determines if the regular language is the Seq language.
  * @param {RegularLanguage} lang
  * @returns {boolean}
  */
-export const isCat = Trait({
+export const isSeq = Trait({
     [all]() { return false; },
-    Cat() { return true; }
+    Seq() { return true; }
 })
