@@ -1,4 +1,4 @@
-import { alt, range, seq, matches } from "../../regular-language/index.mjs"
+import { alt, range, seq, matches } from "../../index.mjs"
 
 describe('Arithmetic', () => {
     // EXPR = EXPR+TERM | TERM

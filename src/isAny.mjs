@@ -1,11 +1,11 @@
 import { Trait, all } from "@mlhaufe/brevity/dist/index.mjs";
 
 /**
- * Determines if the regular language is the Any language.
- * @param {RegularLanguage} lang
+ * Determines if the parser is the Any parser.
+ * @param {Parser} lang
  * @returns {boolean}
  */
-export const isAny = new Trait({
+export const isAny = Trait({
     [all]() { return false; },
     Any() { return true; }
 })

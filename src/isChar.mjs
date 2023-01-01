@@ -1,11 +1,11 @@
 import { Trait, all } from "@mlhaufe/brevity/dist/index.mjs"
 
 /**
- * Determines if the regular language is the Char language.
- * @param {RegularLanguage} lang
+ * Determines if the parser is the Char parser.
+ * @param {Parser} lang
  * @returns {boolean}
  */
-export const isChar = new Trait({
+export const isChar = Trait({
     [all]() { return false; },
     Char() { return true; }
 })

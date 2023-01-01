@@ -1,4 +1,4 @@
-import { alt, seq, matches } from "../../regular-language/index.mjs"
+import { alt, seq, matches } from "../../index.mjs"
 
 describe('Balanced Binary', () => {
     // A = 0A1 | #

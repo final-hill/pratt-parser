@@ -1,6 +1,6 @@
 import { Trait, apply, memoFix } from "@mlhaufe/brevity/dist/index.mjs";
 
-const _toString = new Trait({
+const _toString = Trait({
     Alt({ left, right }) {
         return `Alt(${this[apply](left)}, ${this[apply](right)})`;
     },
@@ -20,7 +20,7 @@ const _toString = new Trait({
 
 /**
  * Returns a string representation of the current expression
- * @param {RegularLanguage} lang
+ * @param {Parser} lang
  * @returns {string}
  */
 export const toString = memoFix(_toString, '$');

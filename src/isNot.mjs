@@ -1,8 +1,8 @@
 import { Trait, all } from "@mlhaufe/brevity/dist/index.mjs"
 
 /**
- * Determines if the regular language is the Not language.
- * @param {RegularLanguage} lang
+ * Determines if the parser is the Not parser.
+ * @param {Parser} lang
  * @returns {boolean}
  */
 export const isNot = Trait({

@@ -1,10 +1,10 @@
 import { Data } from "@mlhaufe/brevity/dist/index.mjs";
 
 /**
- * Represents Regular Language constructs.
+ * Represents Parser constructs.
  */
-export const RegularLanguage = new Data({
-    // L1 ∪ L2 - Represents the union of two regular languages.
+export const Parser = new Data({
+    // P1 ∪ P2 - Represents the union of two parsers.
     Alt: ['left', 'right'],
     // '.' - Represents any single character. A wildcard.
     Any: [],
@@ -12,17 +12,17 @@ export const RegularLanguage = new Data({
     Char: ['value'],
     // ε - Represents the empty string.
     Empty: [],
-    // ∅ - Represents the empty language.
+    // ∅ - Represents the empty parser.
     Nil: [],
-    // ¬L - Represents the complement of a regular language.
+    // ¬P - Represents the complement of a parser.
     Not: ['lang'],
     // [a-b] - Represents a range of characters.
     Range: ['from', 'to'],
-    // L{n} - Represents the repetition of a regular language n times.
+    // P{n} - Represents the repetition of a parser n times.
     Rep: ['lang', 'n'],
-    // L1◦L2 - Represents the concatenation of two regular languages.
+    // P1◦P2 - Represents the concatenation of two parsers.
     Seq: ['first', 'second'],
-    // L* - Represents the Kleene star of a regular language.
+    // P* - Represents the Kleene star of a parser.
     Star: ['lang'],
     // "Foo" - Represents a token.
     Token: ['value']

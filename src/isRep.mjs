@@ -1,11 +1,11 @@
 import { Trait, all } from "@mlhaufe/brevity/dist/index.mjs"
 
 /**
- * Determines if the regular language is the Rep language.
- * @param {RegularLanguage} lang
+ * Determines if the parser is the Rep parser.
+ * @param {Parser} lang
  * @returns {boolean}
  */
-export const isRep = new Trait({
+export const isRep = Trait({
     [all]() { return false; },
     Rep() { return true; }
 })

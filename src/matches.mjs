@@ -2,9 +2,9 @@ import { all, apply, Trait } from "@mlhaufe/brevity/dist/index.mjs";
 import { containsEmpty, equals, deriv, simplify } from "./index.mjs";
 
 /**
- * Determines if the language matches the given string
+ * Determines if the parser matches the given string
  */
-export const matches = new Trait({
+export const matches = Trait({
     [all](self, text) {
         // simplify self until equals returns false
         let [s, s2] = [self, simplify(self)];

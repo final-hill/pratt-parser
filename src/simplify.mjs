@@ -1,15 +1,15 @@
 import { Trait, all, apply, memoFix } from "@mlhaufe/brevity/dist/index.mjs";
-import { RegularLanguage, isAlt, isEmpty, isNil, isNot, isStar, height, equals } from "./index.mjs";
+import { Parser, isAlt, isEmpty, isNil, isNot, isStar, height, equals } from "./index.mjs";
 
-const { Alt, Char, Empty, Not, Rep, Seq, Star } = RegularLanguage;
+const { Alt, Char, Empty, Not, Rep, Seq, Star } = Parser;
 
 const _simplify = Trait({
     [all](self) { return self; },
-    // L ∪ L → L
-    // M ∪ L → L ∪ M
-    // ∅ ∪ L → L
-    // L ∪ ∅ → L
-    // (L ∪ M) ∪ N → L ∪ (M ∪ N)
+    // P ∪ P → P
+    // M ∪ P → P ∪ M
+    // ∅ ∪ P → P
+    // P ∪ ∅ → P
+    // (P ∪ M) ∪ N → P ∪ (M ∪ N)
     Alt({ left, right }) {
         let [l, r] = [left, right]
         if (isAlt(l))
@@ -26,7 +26,7 @@ const _simplify = Trait({
             return arguments[0]
         return Alt(l, r);
     },
-    // ¬¬L → L
+    // ¬¬P → P
     Not({ lang }) {
         const simplified = this[apply](lang);
         return isNot(simplified) ? simplified.lang :
@@ -37,10 +37,10 @@ const _simplify = Trait({
     Range({ from, to }) {
         return from === to ? Char(from) : arguments[0];
     },
-    // L{0} → Ɛ
-    // L{1} → L
-    // L{∞} → L*
-    // L{n} → L{n}
+    // P{0} → Ɛ
+    // P{1} → P
+    // P{∞} → P*
+    // P{n} → P{n}
     Rep({ lang, n }) {
         const simplified = this[apply](lang);
         return n === 0 ? Empty :
@@ -64,7 +64,7 @@ const _simplify = Trait({
                             Seq(fst, snd);
     },
     // ∅* → Ɛ
-    // L** → L*
+    // P** → P*
     // Ɛ* → Ɛ
     Star({ lang }) {
         const simplified = this[apply](lang);
@@ -76,11 +76,11 @@ const _simplify = Trait({
 });
 
 /**
- * Converts the current language to simplest form possible
+ * Converts the current parser to simplest form possible
  * Where 'simplify' is defined as minimizing the height of the expression tree.
  * Additionally, this method will refactor the expression so that other
  * methods will be more likely to short-circuit.
- * @param {RegularLanguage} lang
- * @returns {RegularLanguage}
+ * @param {Parser} lang
+ * @returns {Parser}
  */
 export const simplify = memoFix(_simplify, (self) => self)

@@ -2,9 +2,9 @@ import {
     alt, any, char, empty, nil, not, opt, plus, range, rep, seq, star, token,
     containsEmpty, deriv, equals, height, isAlt, isAny, isSeq, isChar, isEmpty, isNil,
     isNot, isRange, isRep, isStar, isToken, matches, simplify, toString
-} from '../regular-language/index.mjs'
+} from '../index.mjs'
 
-describe('RegularLanguage', () => {
+describe('Parser', () => {
     test('containsEmpty', () => {
         expect(containsEmpty(alt('a', 'b'))).toBe(false)
         expect(containsEmpty(alt('a', empty))).toBe(true)
@@ -42,7 +42,7 @@ describe('RegularLanguage', () => {
         expect(containsEmpty(token('abc'))).toBe(false)
     })
     test('deriv alt', () => {
-        // Dc(L1 ∪ L2) = Dc(L1) ∪ Dc(L2)
+        // Dc(P1 ∪ P2) = Dc(P1) ∪ Dc(P2)
         expect(
             equals(
                 deriv(alt('a', 'b'), 'a'),
@@ -69,10 +69,10 @@ describe('RegularLanguage', () => {
         ).toBe(true)
     })
     test('deriv seq', () => {
-        // Dc(L1◦L2) =  Dc(L1)◦L2           if ε ∉ L1
-        //           =  Dc(L1)◦L2 ∪ Dc(L2)  if ε ∈ L1
+        // Dc(P1◦P2) =  Dc(P1)◦P2           if ε ∉ P1
+        //           =  Dc(P1)◦P2 ∪ Dc(P2)  if ε ∈ P1
 
-        // Dc(L1◦L2) =  Dc(L1)◦L2
+        // Dc(P1◦P2) =  Dc(P1)◦P2
         const ab = seq('a', 'b')
         expect(
             equals(deriv(ab, 'a'), seq(deriv(char('a'), 'a'), 'b'))
@@ -83,7 +83,7 @@ describe('RegularLanguage', () => {
         expect(
             equals(deriv(ab, 'c'), seq(deriv(char('a'), 'c'), 'b'))
         ).toBe(true)
-        // Dc(L1◦L2) =  Dc(L1)◦L2 ∪ Dc(L2)
+        // Dc(P1◦P2) =  Dc(P1)◦P2 ∪ Dc(P2)
         const eb = seq(empty, 'b')
         expect(
             equals(deriv(eb, 'a'),
@@ -114,27 +114,27 @@ describe('RegularLanguage', () => {
         ).toBe(true)
     })
     test('deriv not', () => {
-        const L = char('a')
-        // Dc(¬L) = ¬Dc(L)
+        const P = char('a')
+        // Dc(¬P) = ¬Dc(P)
         expect(
-            equals(deriv(not(L), 'a'), not(deriv(L, 'a')))
+            equals(deriv(not(P), 'a'), not(deriv(P, 'a')))
         ).toBe(true)
         expect(
-            equals(deriv(not(L), 'b'), not(deriv(L, 'b')))
+            equals(deriv(not(P), 'b'), not(deriv(P, 'b')))
         ).toBe(true)
     })
     test('deriv opt', () => {
-        // Dc(L?) = Dc(L ∪ ε)
-        const L = char('a')
+        // Dc(P?) = Dc(P ∪ ε)
+        const P = char('a')
         expect(
-            equals(deriv(opt(L), 'a'), deriv(alt(L, empty), 'a'))
+            equals(deriv(opt(P), 'a'), deriv(alt(P, empty), 'a'))
         ).toBe(true)
     })
     test('deriv plus', () => {
-        const L = char('a')
-        // Dc(L+) = Dc(L)◦L*
+        const P = char('a')
+        // Dc(P+) = Dc(P)◦P*
         expect(
-            equals(deriv(plus(L), 'a'), seq(deriv(L, 'a'), star(L)))
+            equals(deriv(plus(P), 'a'), seq(deriv(P, 'a'), star(P)))
         ).toBe(true)
     })
     test('deriv range', () => {
@@ -154,28 +154,28 @@ describe('RegularLanguage', () => {
         ).toBe(true)
     })
     test('deriv rep', () => {
-        const L = char('a')
+        const P = char('a')
 
-        // Dc(L{0}) = ε
+        // Dc(P{0}) = ε
         expect(
-            equals(deriv(rep(L, 0), 'a'), empty)
+            equals(deriv(rep(P, 0), 'a'), empty)
         ).toBe(true)
 
-        // Dc(L{1}) = Dc(L)
+        // Dc(P{1}) = Dc(P)
         expect(
-            equals(deriv(rep(L, 1), 'a'), deriv(L, 'a'))
+            equals(deriv(rep(P, 1), 'a'), deriv(P, 'a'))
         ).toBe(true)
 
-        // Dc(L{n}) = Dc(L)◦L{n-1}
+        // Dc(P{n}) = Dc(P)◦P{n-1}
         expect(
-            equals(deriv(rep(L, 2), 'a'), seq(deriv(L, 'a'), rep(L, 1)))
+            equals(deriv(rep(P, 2), 'a'), seq(deriv(P, 'a'), rep(P, 1)))
         ).toBe(true)
     })
     test('deriv star', () => {
-        const L = char('a')
-        // Dc(L*) = Dc(L)◦L*
+        const P = char('a')
+        // Dc(P*) = Dc(P)◦P*
         expect(
-            equals(deriv(star(L), 'a'), seq(deriv(L, 'a'), star(L)))
+            equals(deriv(star(P), 'a'), seq(deriv(P, 'a'), star(P)))
         ).toBe(true)
     })
     test('deriv token', () => {
@@ -512,15 +512,15 @@ describe('RegularLanguage', () => {
         expect(matches(token('abc'), 'ab')).toBe(false)
     })
     test('simplify', () => {
-        // L ∪ L → L
+        // P ∪ P → P
         expect(equals(simplify(alt('a', 'a')), char('a'))).toBe(true)
-        // M ∪ L → L ∪ M
+        // M ∪ P → P ∪ M
         expect(equals(simplify(alt(not('b'), 'a')), alt('a', not('b')))).toBe(true)
-        // ∅ ∪ L → L
+        // ∅ ∪ P → P
         expect(equals(simplify(alt(nil, 'a')), char('a'))).toBe(true)
-        // L ∪ ∅ → L
+        // P ∪ ∅ → P
         expect(equals(simplify(alt('a', nil)), char('a'))).toBe(true)
-        // (L ∪ M) ∪ N → L ∪ (M ∪ N)
+        // (P ∪ M) ∪ N → P ∪ (M ∪ N)
         expect(equals(
             simplify(alt(alt('a', 'b'), 'c')),
             alt('a', alt('b', 'c'))
@@ -539,13 +539,13 @@ describe('RegularLanguage', () => {
         expect(equals(simplify(empty), empty)).toBe(true)
         // ∅ → ∅
         expect(equals(simplify(nil), nil)).toBe(true)
-        // ¬¬L → L
+        // ¬¬P → P
         expect(equals(simplify(not(not('a'))), char('a'))).toBe(true)
-        // L? → L?
+        // P? → P?
         expect(equals(simplify(opt('a')), opt('a'))).toBe(true)
         // ∅? → Ɛ
         expect(equals(simplify(opt(nil)), empty)).toBe(true)
-        // L+ → L+
+        // P+ → P+
         expect(equals(simplify(plus('a')), plus('a'))).toBe(true)
         // ∅+ → ∅
         expect(equals(simplify(plus(nil)), nil)).toBe(true)
@@ -553,17 +553,17 @@ describe('RegularLanguage', () => {
         expect(equals(simplify(range('a', 'a')), char('a'))).toBe(true)
         // [a-b] → [a-b]
         expect(equals(simplify(range('a', 'b')), range('a', 'b'))).toBe(true)
-        // L{0} → Ɛ
+        // P{0} → Ɛ
         expect(equals(simplify(rep('a', 0)), empty)).toBe(true)
-        // L{1} → L
+        // P{1} → P
         expect(equals(simplify(rep('a', 1)), char('a'))).toBe(true)
-        // L{∞} → L*
+        // P{∞} → P*
         expect(equals(simplify(rep('a', Infinity)), star('a'))).toBe(true)
-        // L{n} → L{n}
+        // P{n} → P{n}
         expect(equals(simplify(rep('a', 2)), rep('a', 2))).toBe(true)
         // ∅* → Ɛ
         expect(equals(simplify(star(nil)), empty)).toBe(true)
-        // L** → L*
+        // P** → P*
         expect(equals(simplify(star(star('a'))), star('a'))).toBe(true)
         // Ɛ* → Ɛ
         expect(equals(simplify(star(empty)), empty)).toBe(true)

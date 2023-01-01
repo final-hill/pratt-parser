@@ -1,4 +1,4 @@
-import { token, seq, alt, matches } from "../../regular-language/index.mjs"
+import { token, seq, alt, matches } from "../../index.mjs"
 
 describe('English Fragment', () => {
     const SENTENCE = seq(() => NOUN_PHRASE, ' ', () => VERB_PHRASE),

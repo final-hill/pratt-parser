@@ -1,8 +1,8 @@
 import { Trait, all } from "@mlhaufe/brevity/dist/index.mjs"
 
 /**
- * Determines if the regular language is the Range language.
- * @param {RegularLanguage} lang
+ * Determines if the parser is the Range parser.
+ * @param {Parser} lang
  * @returns {boolean}
  */
 export const isRange = Trait({

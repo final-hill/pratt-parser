@@ -1,6 +1,6 @@
 import {
     alt, empty, equals, containsEmpty, isAlt, seq, height, matches
-} from "../../regular-language/index.mjs"
+} from "../../index.mjs"
 
 describe('Balanced Parens', () => {
     // S = [S] | SS | ε

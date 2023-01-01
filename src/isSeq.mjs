@@ -1,8 +1,8 @@
 import { Trait, all } from "@mlhaufe/brevity/dist/index.mjs";
 
 /**
- * Determines if the regular language is the Seq language.
- * @param {RegularLanguage} lang
+ * Determines if the parser is the Seq parser.
+ * @param {Parser} lang
  * @returns {boolean}
  */
 export const isSeq = Trait({

@@ -1,7 +1,7 @@
 import { Trait, apply, memoFix } from "@mlhaufe/brevity/dist/index.mjs"
 import { isAlt, isAny, isSeq, isChar, isEmpty, isNil, isNot, isRange, isRep, isStar, isToken } from './index.mjs'
 
-const _equals = new Trait({
+const _equals = Trait({
     Alt({ left, right }, other) {
         return isAlt(other) && this[apply](left, other.left) && this[apply](right, other.right)
     },
@@ -32,17 +32,17 @@ const _equals = new Trait({
 })
 
 /**
- * Determines if two regular languages are equal
- * L1 ∪ L2 = L2 ∪ L1   if L1 = L1 and L2 = L2
+ * Determines if two parsers are equal
+ * P1 ∪ P2 = P2 ∪ P1   if P1 = P1 and P2 = P2
  * . = .
- * L1◦L2 = L1◦L2  if L1 = L1 and L2 = L2
+ * P1◦P2 = P1◦P2  if P1 = P1 and P2 = P2
  * c = c
  * ε = ε
  * ∅ = ∅
- * ¬L = ¬L  if L = L
+ * ¬P = ¬P  if P = P
  * [a,b] = [a,b]
- * L{n} = L{n}
- * L* = L*  if L = L
+ * P{n} = P{n}
+ * P* = P*  if P = P
  * "c" = "c"
  */
 export const equals = memoFix(_equals, true)

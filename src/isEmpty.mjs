@@ -1,11 +1,11 @@
 import { Trait, all } from "@mlhaufe/brevity/dist/index.mjs"
 
 /**
- * Determines if the regular language is the Empty language.
- * @param {RegularLanguage} lang
+ * Determines if the parser is the Empty parser.
+ * @param {Parser} lang
  * @returns {boolean}
  */
-export const isEmpty = new Trait({
+export const isEmpty = Trait({
     [all]() { return false; },
     Empty() { return true; }
 })

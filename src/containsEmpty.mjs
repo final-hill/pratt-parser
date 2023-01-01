@@ -1,6 +1,6 @@
 import { Trait, apply, memoFix } from "@mlhaufe/brevity/dist/index.mjs"
 
-const _containsEmpty = new Trait({
+const _containsEmpty = Trait({
     Alt({ left, right }) {
         return this[apply](left) || this[apply](right)
     },
@@ -23,20 +23,20 @@ const _containsEmpty = new Trait({
 })
 
 /**
- * Determines if the regular language contains the Empty language.
- * δ(L1 | L2) = δ(L1) | δ(L2)
+ * Determines if the parser contains the Empty parser.
+ * δ(P1 | P2) = δ(P1) | δ(P2)
  * δ(.) = true
- * δ(L1◦L2) = δ(L1) && δ(L2)
+ * δ(P1◦P2) = δ(P1) && δ(P2)
  * δ(c) = false
  * δ(ε) = true
  * δ(∅) = false
- * δ(!L) = !δ(L)
+ * δ(!P) = !δ(P)
  * δ([a-z]) = false
- * δ(L{0}) = true
- * δ(L{n}) = δ(L)
- * δ(L*) = true
+ * δ(P{0}) = true
+ * δ(P{n}) = δ(P)
+ * δ(P*) = true
  * δ("token") = false
- * @param {RegularLanguage} lang
+ * @param {Parser} lang
  * @returns {boolean}
  */
 export const containsEmpty = memoFix(_containsEmpty, false)

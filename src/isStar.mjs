@@ -1,11 +1,11 @@
 import { Trait, all } from "@mlhaufe/brevity/dist/index.mjs"
 
 /**
- * Determines if the regular language is the Star language.
- * @param {RegularLanguage} lang
+ * Determines if the parser is the Star parser.
+ * @param {Parser} lang
  * @returns {boolean}
  */
-export const isStar = new Trait({
+export const isStar = Trait({
     [all]() { return false; },
     Star() { return true; }
 })

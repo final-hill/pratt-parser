@@ -1,10 +1,10 @@
 import { Trait, apply, memoFix } from "@mlhaufe/brevity/dist/index.mjs";
-import { containsEmpty, RegularLanguage } from "./index.mjs";
+import { containsEmpty, Parser } from "./index.mjs";
 
-const { Alt, Char, Empty, Nil, Not, Rep, Seq, Star, Token } = RegularLanguage;
+const { Alt, Char, Empty, Nil, Not, Rep, Seq, Star, Token } = Parser;
 
 const _deriv = Trait({
-    // Dc(L1 ∪ L2) = Dc(L1) ∪ Dc(L2)
+    // Dc(P1 ∪ P2) = Dc(P1) ∪ Dc(P2)
     Alt({ left, right }, c) {
         return Alt(() => this[apply](left, c), () => this[apply](right, c))
     },
@@ -17,7 +17,7 @@ const _deriv = Trait({
     Empty() { return Nil },
     // Dc(∅) = ∅
     Nil() { return Nil },
-    // Dc(¬L) = ¬Dc(L)
+    // Dc(¬P) = ¬Dc(P)
     Not(self, c) {
         return Not(() => this[apply](self.lang, c))
     },
@@ -29,9 +29,9 @@ const _deriv = Trait({
             c
         )
     },
-    // Dc(L{0}) = ε
-    // Dc(L{1}) = Dc(L)
-    // Dc(L{n}) = Dc(L)◦L{n-1}
+    // Dc(P{0}) = ε
+    // Dc(P{1}) = Dc(P)
+    // Dc(P{n}) = Dc(P)◦P{n-1}
     Rep({ lang, n }, c) {
         if (n < 0) throw new Error('n must be greater than or equal to 0')
         if (!Number.isInteger(n)) throw new Error('n must be an integer')
@@ -43,14 +43,14 @@ const _deriv = Trait({
             return Seq(() => this[apply](lang, c), Rep(lang, n - 1))
         }
     },
-    // Dc(L1◦L2) =  Dc(L1)◦L2           if ε ∉ L1
-    //           =  Dc(L1)◦L2 ∪ Dc(L2)  if ε ∈ L1
+    // Dc(P1◦P2) =  Dc(P1)◦P2           if ε ∉ P1
+    //           =  Dc(P1)◦P2 ∪ Dc(P2)  if ε ∈ P1
     Seq(self, c) {
         const fst = self.first,
             d1Seq = Seq(this[apply](fst, c), () => self.second);
         return containsEmpty(fst) ? Alt(d1Seq, () => this[apply](self.second, c)) : d1Seq
     },
-    // Dc(L*) = Dc(L)◦L*
+    // Dc(P*) = Dc(P)◦P*
     Star({ lang }, c) {
         return Seq(() => this[apply](lang, c), Star(lang))
     },
@@ -68,9 +68,13 @@ const _deriv = Trait({
 })
 
 /**
- * Computes the derivative of a regular language with respect to a character c.
- * The derivative is a new language where all strings that start with the character
+ * Computes the derivative of a parser with respect to a character c.
+ * The derivative is a new parser where all strings that start with the character
  * are retained. The prefix character is then removed.
  * @see https://en.wikipedia.org/wiki/Brzozowski_derivative
+ * @see https://matt.might.net/articles/parsing-with-derivatives/
+ * @param {Parser} parser - The parser to derive.
+ * @param {string} c - The character to derive with respect to.
+ * @returns {Parser} The derivative of the parser with respect to the character.
  */
 export const deriv = memoFix(_deriv, Nil);
