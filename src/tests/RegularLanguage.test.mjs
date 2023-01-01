@@ -1,7 +1,7 @@
 import {
     alt, any, cat, char, empty, nil, not, opt, plus, range, rep, seq, star, token,
     containsEmpty, deriv, equals, height, isAlt, isAny, isCat, isChar, isEmpty, isNil,
-    isNot, isRange, isRep, isStar, isToken, matches, nilOrEmpty, simplify, toString
+    isNot, isRange, isRep, isStar, isToken, matches, simplify, toString
 } from '../regular-language/index.mjs'
 
 describe('RegularLanguage', () => {
@@ -509,59 +509,6 @@ describe('RegularLanguage', () => {
         expect(matches(token('abc'), 'abc')).toBe(true)
         // "abc" does not match "ab"
         expect(matches(token('abc'), 'ab')).toBe(false)
-    })
-    test('nilOrEmpty', () => {
-        // δ(L1 ∪ L2) = δ(L1) ∪ δ(L2)
-        expect(
-            equals(
-                nilOrEmpty(alt('a', 'b')),
-                alt(nilOrEmpty(char('a')), nilOrEmpty(char('b')))
-            )
-        ).toBe(true)
-
-        // δ(.) = ∅
-        expect(equals(nilOrEmpty(any), nil)).toBe(true)
-
-        // δ(L1◦L2) = δ(L1)◦δ(L2)
-        expect(
-            equals(
-                nilOrEmpty(cat('a', 'b')),
-                cat(nilOrEmpty(char('a')), nilOrEmpty(char('b')))
-            )
-        ).toBe(true)
-
-        // δ(c) = ∅
-        expect(equals(nilOrEmpty(char('a')), nil)).toBe(true)
-
-        // δ(ε) = ε
-        expect(equals(nilOrEmpty(empty), empty)).toBe(true)
-
-        // δ(∅) = ∅
-        expect(equals(nilOrEmpty(nil), nil)).toBe(true)
-
-        // δ(¬P) = ε if δ(P) = ∅
-        expect(equals(nilOrEmpty(not(nil)), empty)).toBe(true)
-
-        // δ(¬P) = ∅ if δ(P) = ε
-        expect(equals(nilOrEmpty(not(empty)), nil)).toBe(true)
-
-        // δ(P?) = ε
-        expect(equals(nilOrEmpty(opt('a')), alt(nilOrEmpty(char('a')), empty))).toBe(true)
-
-        // δ([a-z]) = ∅
-        expect(equals(nilOrEmpty(range('a', 'z')), nil)).toBe(true)
-
-        // δ(L{0}) = ε
-        expect(equals(nilOrEmpty(rep('a', 0)), empty)).toBe(true)
-
-        // δ(L{n}) = δ(L)
-        expect(equals(nilOrEmpty(rep('a', 1)), nilOrEmpty(char('a')))).toBe(true)
-
-        // δ(L*) = ε
-        expect(equals(nilOrEmpty(star('a')), empty)).toBe(true)
-
-        // δ("abc") = ∅
-        expect(equals(nilOrEmpty(token('abc')), nil)).toBe(true)
     })
     test('simplify', () => {
         // L ∪ L → L

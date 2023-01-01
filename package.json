@@ -20,8 +20,7 @@
     },
     "homepage": "https://github.com/final-hill/pratt-parser#readme",
     "dependencies": {
-        "@final-hill/multi-key-map": "^1.0.2",
-        "@mlhaufe/brevity": "github:mlhaufe/brevity#v0.2.5"
+        "@mlhaufe/brevity": "github:mlhaufe/brevity#v0.4.0"
     },
     "devDependencies": {
         "@types/jest": "^29.2.4",

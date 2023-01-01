@@ -1,4 +1,4 @@
-import { Trait, all } from "@mlhaufe/brevity/dist/Trait.mjs"
+import { Trait, all } from "@mlhaufe/brevity/dist/index.mjs"
 
 /**
  * Determines if the regular language is the Token language.

@@ -17,7 +17,6 @@ export { isRep } from './isRep.mjs'
 export { isStar } from './isStar.mjs'
 export { isToken } from './isToken.mjs'
 export { matches } from './matches.mjs'
-export { nilOrEmpty } from './nilOrEmpty.mjs'
 export { simplify } from './simplify.mjs'
 export { toString } from './toString.mjs'
 

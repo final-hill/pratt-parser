@@ -1,24 +1,22 @@
-import { Trait, apply } from "@mlhaufe/brevity/dist/Trait.mjs"
-import { force } from '../force.mjs'
-import { memoFix } from "../memoFix.mjs"
+import { Trait, apply, memoFix } from "@mlhaufe/brevity/dist/index.mjs"
 
 const _containsEmpty = new Trait({
     Alt({ left, right }) {
-        return this[apply](force(left)) || this[apply](force(right))
+        return this[apply](left) || this[apply](right)
     },
     Any() { return true; },
     Cat({ first, second }) {
-        return this[apply](force(first)) && this[apply](force(second))
+        return this[apply](first) && this[apply](second)
     },
     Char() { return false; },
     Empty() { return true; },
     Nil() { return false; },
     Not({ lang }) {
-        return !this[apply](force(lang))
+        return !this[apply](lang)
     },
     Range() { return false; },
     Rep({ lang, n }) {
-        return n === 0 || this[apply](force(lang))
+        return n === 0 || this[apply](lang)
     },
     Star() { return true; },
     Token() { return false; }
@@ -41,4 +39,4 @@ const _containsEmpty = new Trait({
  * @param {RegularLanguage} lang
  * @returns {boolean}
  */
-export const containsEmpty = memoFix(false, _containsEmpty)
+export const containsEmpty = memoFix(_containsEmpty, false)

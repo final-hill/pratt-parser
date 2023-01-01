@@ -1,7 +1,5 @@
-import { Trait, all, apply } from "@mlhaufe/brevity/dist/Trait.mjs";
+import { Trait, all, apply, memoFix } from "@mlhaufe/brevity/dist/index.mjs";
 import { RegularLanguage, isAlt, isEmpty, isNil, isNot, isStar, height, equals } from "./index.mjs";
-import { force } from "../force.mjs";
-import { memoFix } from "../memoFix.mjs";
 
 const { Alt, Cat, Char, Empty, Not, Rep, Star } = RegularLanguage;
 
@@ -13,7 +11,7 @@ const _simplify = Trait({
     // L ∪ ∅ → L
     // (L ∪ M) ∪ N → L ∪ (M ∪ N)
     Alt({ left, right }) {
-        let [l, r] = [left, right].map(p => this[apply](force(p)));
+        let [l, r] = [left, right]
         if (isAlt(l))
             [l, r] = [l.left, Alt(l.right, r)];
         if (height(l) > height(r))
@@ -34,19 +32,17 @@ const _simplify = Trait({
     // Unused: P(Q ∪ R) → PQ ∪ PR  (Is this actually simpler? Maybe the other direction?)
     // Unused: (Q ∪ R)P → QP ∪ RP  (Is this actually simpler? Maybe the other direction?)
     Cat({ first, second }) {
-        const [fst, snd] = [first, second].map(p => this[apply](force(p)));
+        const [fst, snd] = [first, second]
         return isNil(fst) ? fst :
             isNil(snd) ? snd :
                 isEmpty(fst) ? snd :
                     isEmpty(snd) ? fst :
-                        // FIXME: if first|second are functions then fst|snd will be different
-                        //       and we'll return a new Cat
                         fst === first && snd === second ? arguments[0] :
                             Cat(fst, snd);
     },
     // ¬¬L → L
     Not({ lang }) {
-        const simplified = this[apply](force(lang));
+        const simplified = this[apply](lang);
         return isNot(simplified) ? simplified.lang :
             simplified === lang ? arguments[0] : Not(simplified);
     },
@@ -60,7 +56,7 @@ const _simplify = Trait({
     // L{∞} → L*
     // L{n} → L{n}
     Rep({ lang, n }) {
-        const simplified = this[apply](force(lang));
+        const simplified = this[apply](lang);
         return n === 0 ? Empty :
             n === 1 ? simplified :
                 n === Infinity ? Star(simplified) :
@@ -71,7 +67,7 @@ const _simplify = Trait({
     // L** → L*
     // Ɛ* → Ɛ
     Star({ lang }) {
-        const simplified = this[apply](force(lang));
+        const simplified = this[apply](lang);
         return isNil(simplified) || isEmpty(simplified) ? Empty :
             isStar(simplified) ? simplified :
                 simplified === lang ? arguments[0] :
@@ -87,4 +83,4 @@ const _simplify = Trait({
  * @param {RegularLanguage} lang
  * @returns {RegularLanguage}
  */
-export const simplify = memoFix((self) => self, _simplify)
+export const simplify = memoFix(_simplify, (self) => self)

@@ -1,4 +1,4 @@
-import { all, apply, Trait } from "@mlhaufe/brevity/dist/Trait.mjs";
+import { all, apply, Trait } from "@mlhaufe/brevity/dist/index.mjs";
 import { containsEmpty, equals, deriv, simplify } from "./index.mjs";
 
 /**

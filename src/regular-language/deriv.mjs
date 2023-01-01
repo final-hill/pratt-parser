@@ -1,7 +1,5 @@
-import { Trait, apply } from "@mlhaufe/brevity/dist/Trait.mjs";
+import { Trait, apply, memoFix } from "@mlhaufe/brevity/dist/index.mjs";
 import { containsEmpty, RegularLanguage } from "./index.mjs";
-import { force } from "../force.mjs";
-import { memoFix } from "../memoFix.mjs";
 
 const { Alt, Cat, Char, Empty, Nil, Not, Rep, Star, Token } = RegularLanguage;
 
@@ -14,10 +12,10 @@ const _deriv = Trait({
     Any() { return Empty },
     // Dc(L1◦L2) =  Dc(L1)◦L2           if ε ∉ L1
     //           =  Dc(L1)◦L2 ∪ Dc(L2)  if ε ∈ L1
-    Cat({ first, second }, c) {
-        const f = force(first),
-            d1Cat = Cat(this[apply](f, c), second);
-        return containsEmpty(f) ? Alt(d1Cat, () => this[apply](force(second), c)) : d1Cat
+    Cat(self, c) {
+        const fst = self.first,
+            d1Cat = Cat(this[apply](fst, c), () => self.second);
+        return containsEmpty(fst) ? Alt(d1Cat, () => this[apply](self.second, c)) : d1Cat
     },
     // Dc(c) = ε
     // Dc(c') = ∅
@@ -27,8 +25,8 @@ const _deriv = Trait({
     // Dc(∅) = ∅
     Nil() { return Nil },
     // Dc(¬L) = ¬Dc(L)
-    Not({ lang }, c) {
-        return Not(() => this[apply](force(lang), c))
+    Not(self, c) {
+        return Not(() => this[apply](self.lang, c))
     },
     // Dc([a-z]) = Dc(c)
     // Dc([a-b]) = Dc(∅)
@@ -48,13 +46,13 @@ const _deriv = Trait({
             return Empty
         } else {
             if (n === 1)
-                return this[apply](force(lang), c)
-            return Cat(() => this[apply](force(lang), c), Rep(lang, n - 1))
+                return this[apply](lang, c)
+            return Cat(() => this[apply](lang, c), Rep(lang, n - 1))
         }
     },
     // Dc(L*) = Dc(L)◦L*
     Star({ lang }, c) {
-        return Cat(() => this[apply](force(lang), c), Star(lang))
+        return Cat(() => this[apply](lang, c), Star(lang))
     },
     // Dc("") = Dc(ε)
     // Dc("c") = Dc(c)
@@ -75,4 +73,4 @@ const _deriv = Trait({
  * are retained. The prefix character is then removed.
  * @see https://en.wikipedia.org/wiki/Brzozowski_derivative
  */
-export const deriv = memoFix(Nil, _deriv);
+export const deriv = memoFix(_deriv, Nil);
