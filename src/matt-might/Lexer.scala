@@ -716,7 +716,7 @@ class CharRangeSet(start : Char, end : Char) extends scala.collection.immutable.
   def + (c : Char) : Set[Char] = throw new Exception("Can't add to a CharRangeSet!")
   def empty[B] : Set[B] = throw new Exception("Can't get an empty CharRangeSet!")
   
-  override def elements : Iterator[Char] = new Iterator[Char] {
+  def elements : Iterator[Char] = new Iterator[Char] {
     private var current = start.toInt
     private val last = end.toInt
 
@@ -732,8 +732,6 @@ class CharRangeSet(start : Char, end : Char) extends scala.collection.immutable.
     }
   }
 
-  override def  iterator: Iterator[Char] = elements
-
-  override def size = end.toInt - start.toInt
+  def size = end.toInt - start.toInt
   def contains (c : Char) : Boolean = (start.toInt <= c) && (c <= end.toInt)
 }

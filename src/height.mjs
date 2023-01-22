@@ -5,17 +5,17 @@ const _height = Trait({
     Alt({ left, right }) {
         return Math.max(this[apply](left), this[apply](right)) + 1;
     },
-    Not({ lang }) { return this[apply](lang) + 1; },
-    Rep({ lang }) { return this[apply](lang) + 1; },
+    Not({ parser }) { return this[apply](parser) + 1; },
+    Rep({ parser }) { return this[apply](parser) + 1; },
     Seq({ first, second }) {
         return Math.max(this[apply](first), this[apply](second)) + 1;
     },
-    Star({ lang }) { return this[apply](lang) + 1; }
+    Star({ parser }) { return this[apply](parser) + 1; }
 })
 
 /**
  * Represents the height of a parser.
- * @param {Parser} lang
+ * @param {Parser} parser
  * @returns {number}
  */
 export const height = memoFix(_height, 0);

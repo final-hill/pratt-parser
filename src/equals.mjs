@@ -1,5 +1,11 @@
 import { Trait, apply, memoFix } from "@mlhaufe/brevity/dist/index.mjs"
-import { isAlt, isAny, isSeq, isChar, isEmpty, isNil, isNot, isRange, isRep, isStar, isToken } from './index.mjs'
+import {
+    isAlt, isAny, isSeq, isChar, isEmpty, isNil, isNot, isNullability,
+    isRange, isEmptyReduction, isReduction, isRep, isStar, isToken
+} from './index.mjs'
+
+// a function that determines if two Sets are equal
+const setEquals = (a, b) => a.size === b.size && [...a].every((x) => b.has(x))
 
 const _equals = Trait({
     Alt({ left, right }, other) {
@@ -11,20 +17,29 @@ const _equals = Trait({
     },
     Empty(_, other) { return isEmpty(other); },
     Nil(_, other) { return isNil(other); },
-    Not({ lang }, other) {
-        return isNot(other) && this[apply](lang, other.lang)
+    Not({ parser }, other) {
+        return isNot(other) && this[apply](parser, other.parser)
+    },
+    Nullability({ parser }, other) {
+        return isNullability(other) && this[apply](parser, other.parser)
     },
     Range({ from, to }, other) {
         return isRange(other) && from === other.from && to === other.to
     },
-    Rep({ lang, n }, other) {
-        return isRep(other) && n === other.n && this[apply](lang, other.lang)
+    EmptyReduction({ trees }, other) {
+        return isEmptyReduction(other) && setEquals(trees, other.trees)
+    },
+    Reduction({ parser, fn }, other) {
+        return isReduction(other) && this[apply](parser, other.parser) && fn.toString() === other.fn.toString()
+    },
+    Rep({ parser, n }, other) {
+        return isRep(other) && n === other.n && this[apply](parser, other.parser)
     },
     Seq({ first, second }, other) {
         return isSeq(other) && this[apply](first, other.first) && this[apply](second, other.second)
     },
-    Star({ lang }, other) {
-        return isStar(other) && this[apply](lang, other.lang)
+    Star({ parser }, other) {
+        return isStar(other) && this[apply](parser, other.parser)
     },
     Token({ value }, other) {
         return isToken(other) && value === other.value

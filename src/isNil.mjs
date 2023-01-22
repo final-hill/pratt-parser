@@ -2,7 +2,7 @@ import { Trait, all } from "@mlhaufe/brevity/dist/index.mjs"
 
 /**
  * Determine if the current expression is an instance of Nil
- * @param {Parser} lang
+ * @param {Parser} parser
  * @returns {boolean}
  */
 export const isNil = Trait({

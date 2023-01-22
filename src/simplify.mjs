@@ -27,10 +27,10 @@ const _simplify = Trait({
         return Alt(l, r);
     },
     // ¬¬P → P
-    Not({ lang }) {
-        const simplified = this[apply](lang);
-        return isNot(simplified) ? simplified.lang :
-            simplified === lang ? arguments[0] : Not(simplified);
+    Not({ parser }) {
+        const simplified = this[apply](parser);
+        return isNot(simplified) ? simplified.parser :
+            simplified === parser ? arguments[0] : Not(simplified);
     },
     // [a-a] → a
     // [a-b] → [a-b]
@@ -41,12 +41,12 @@ const _simplify = Trait({
     // P{1} → P
     // P{∞} → P*
     // P{n} → P{n}
-    Rep({ lang, n }) {
-        const simplified = this[apply](lang);
+    Rep({ parser, n }) {
+        const simplified = this[apply](parser);
         return n === 0 ? Empty :
             n === 1 ? simplified :
                 n === Infinity ? Star(simplified) :
-                    simplified === lang ? arguments[0] :
+                    simplified === parser ? arguments[0] :
                         Rep(simplified, n);
     },
     // PƐ → ƐP → P
@@ -66,11 +66,11 @@ const _simplify = Trait({
     // ∅* → Ɛ
     // P** → P*
     // Ɛ* → Ɛ
-    Star({ lang }) {
-        const simplified = this[apply](lang);
+    Star({ parser }) {
+        const simplified = this[apply](parser);
         return isNil(simplified) || isEmpty(simplified) ? Empty :
             isStar(simplified) ? simplified :
-                simplified === lang ? arguments[0] :
+                simplified === parser ? arguments[0] :
                     Star(simplified);
     }
 });
@@ -80,7 +80,7 @@ const _simplify = Trait({
  * Where 'simplify' is defined as minimizing the height of the expression tree.
  * Additionally, this method will refactor the expression so that other
  * methods will be more likely to short-circuit.
- * @param {Parser} lang
+ * @param {Parser} parser
  * @returns {Parser}
  */
 export const simplify = memoFix(_simplify, (self) => self)

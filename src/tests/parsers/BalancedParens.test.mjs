@@ -1,14 +1,10 @@
 import {
-    alt, empty, equals, containsEmpty, isAlt, seq, height, matches
+    alt, empty, equals, isAlt, seq, height, matches
 } from "../../index.mjs"
 
 describe('Balanced Parens', () => {
     // S = [S] | SS | ε
     const S = alt(seq('[', () => S, ']'), seq(() => S, () => S), empty)
-
-    test('containsEmpty', () => {
-        expect(containsEmpty(S)).toBe(true)
-    })
 
     test('equals', () => {
         expect(equals(S, S)).toBe(true)

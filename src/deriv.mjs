@@ -1,7 +1,7 @@
 import { Trait, apply, memoFix } from "@mlhaufe/brevity/dist/index.mjs";
-import { containsEmpty, Parser } from "./index.mjs";
+import { Parser } from "./index.mjs";
 
-const { Alt, Char, Empty, Nil, Not, Rep, Seq, Star, Token } = Parser;
+const { Alt, Char, Empty, Nil, Not, Nullability, EmptyReduction, Reduction, Rep, Seq, Star, Token } = Parser;
 
 const _deriv = Trait({
     // Dc(P1 ∪ P2) = Dc(P1) ∪ Dc(P2)
@@ -10,17 +10,21 @@ const _deriv = Trait({
     },
     // Dc(.) = ε
     Any() { return Empty },
-    // Dc(c) = ε
+    // Dc(c) = ε ↓ {c}
     // Dc(c') = ∅
-    Char({ value }, c) { return value === c ? Empty : Nil },
+    Char(self, c) {
+        return self.value === c ? EmptyReduction(new Set([c])) : Nil
+    },
     // Dc(ε) = ∅
     Empty() { return Nil },
     // Dc(∅) = ∅
     Nil() { return Nil },
     // Dc(¬P) = ¬Dc(P)
     Not(self, c) {
-        return Not(() => this[apply](self.lang, c))
+        return Not(() => this[apply](self.parser, c))
     },
+    // Dc(δ(P)) = ∅
+    Nullability() { return Nil },
     // Dc([a-z]) = Dc(c)
     // Dc([a-b]) = Dc(∅)
     Range({ from, to }, c) {
@@ -29,30 +33,39 @@ const _deriv = Trait({
             c
         )
     },
+    // Dc(ε ↓ S) = ∅
+    EmptyReduction() { return Nil },
+    // Dc(p → f) = Dc(p) → f
+    Reduction({ parser, fn }, c) {
+        return Reduction(this[apply](parser, c), () => fn)
+    },
     // Dc(P{0}) = ε
     // Dc(P{1}) = Dc(P)
     // Dc(P{n}) = Dc(P)◦P{n-1}
-    Rep({ lang, n }, c) {
+    Rep({ parser, n }, c) {
         if (n < 0) throw new Error('n must be greater than or equal to 0')
         if (!Number.isInteger(n)) throw new Error('n must be an integer')
         if (n === 0) {
             return Empty
         } else {
             if (n === 1)
-                return this[apply](lang, c)
-            return Seq(() => this[apply](lang, c), Rep(lang, n - 1))
+                return this[apply](parser, c)
+            return Seq(() => this[apply](parser, c), Rep(parser, n - 1))
         }
     },
-    // Dc(P1◦P2) =  Dc(P1)◦P2           if ε ∉ P1
-    //           =  Dc(P1)◦P2 ∪ Dc(P2)  if ε ∈ P1
-    Seq(self, c) {
-        const fst = self.first,
-            d1Seq = Seq(this[apply](fst, c), () => self.second);
-        return containsEmpty(fst) ? Alt(d1Seq, () => this[apply](self.second, c)) : d1Seq
+    // Dc(P◦Q) = Dc(P)◦Q ∪ δ(P)◦Dc(Q)
+    Seq({ first, second }, c) {
+        return Alt(
+            Seq(() => this[apply](first, c), second),
+            Seq(Nullability(first), () => this[apply](second, c))
+        )
     },
-    // Dc(P*) = Dc(P)◦P*
-    Star({ lang }, c) {
-        return Seq(() => this[apply](lang, c), Star(lang))
+    // Dc(P*) = Dc(P)◦P* → λ(h, t).h ++ t
+    Star({ parser }, c) {
+        return Reduction(
+            Seq(() => this[apply](parser, c), Star(parser)),
+            () => (h, t) => [h, ...t]
+        )
     },
     // Dc("") = Dc(ε)
     // Dc("c") = Dc(c)

@@ -1,6 +1,5 @@
 import { Parser } from './Parser.mjs'
 export { Parser }
-export { containsEmpty } from './containsEmpty.mjs'
 export { deriv } from './deriv.mjs'
 export { equals } from './equals.mjs'
 export { height } from './height.mjs'
@@ -10,12 +9,15 @@ export { isChar } from './isChar.mjs'
 export { isEmpty } from './isEmpty.mjs'
 export { isNil } from './isNil.mjs'
 export { isNot } from './isNot.mjs'
+export { isNullability } from './isNullability.mjs'
 export { isRange } from './isRange.mjs'
+export { isEmptyReduction } from './isEmptyReduction.mjs'
+export { isReduction } from './isReduction.mjs'
 export { isRep } from './isRep.mjs'
 export { isSeq } from './isSeq.mjs'
 export { isStar } from './isStar.mjs'
 export { isToken } from './isToken.mjs'
-export { matches } from './matches.mjs'
+export { parse } from './parse.mjs'
 export { simplify } from './simplify.mjs'
 export { toString } from './toString.mjs'
 
@@ -29,11 +31,11 @@ const normalize = (strOrLang) =>
 
 /**
 * P1|P2|P3...Pn - Represents the alternation of parsers.
-* @param {string|Parser} langs
+* @param {string|Parser} parsers
 * @returns {Parser}
 */
-export const alt = (...langs) =>
-    langs.reduce((acc, lang) => Alt(normalize(acc), normalize(lang))),
+export const alt = (...parsers) =>
+    parsers.reduce((acc, parser) => Alt(normalize(acc), normalize(parser))),
     /**
      * . - Represents any character.
      * @type {Parser}
@@ -56,22 +58,23 @@ export const alt = (...langs) =>
     nil = Nil,
     /**
      * ¬P - Represents the negation of a parser.
-     * @param {string|Parser} lang
+     * @param {string|Parser} parser
      * @returns {Parser}
      */
-    not = (lang) => Not(normalize(lang)),
+    not = (parser) => Not(normalize(parser)),
     /**
      * P? - Represents the optional repetition of a parser.
-     * @param {string|Parser} lang
+     * @param {string|Parser} parser
      * @returns {Parser}
      */
-    opt = (lang) => alt(normalize(lang), empty),
+    opt = (parser) => alt(normalize(parser), empty),
     /**
      * P+ - Represents the one or more repetition of a parser.
-     * @param {string|Parser} lang
+     * P+ = P P*
+     * @param {string|Parser} parser
      * @returns {Parser}
      */
-    plus = (lang) => Seq(normalize(lang), star(normalize(lang))),
+    plus = (parser) => Seq(normalize(parser), star(normalize(parser))),
     /**
      * [a-z] - Represents the range of characters from a to z.
      * @param {string} from
@@ -81,24 +84,24 @@ export const alt = (...langs) =>
     range = (from, to) => Range(from, to),
     /**
      * P{n} - Represents the n repetitions of a parser.
-     * @param {string|Parser} lang
+     * @param {string|Parser} parser
      * @param {number} n
      * @returns {Parser}
      * @throws {Error} If n is not a positive integer.
      */
-    rep = (lang, n) => Rep(normalize(lang), n),
+    rep = (parser, n) => Rep(normalize(parser), n),
     /**
      * P1P2P3...Pn - Represents the concatenation of a sequence of parsers.
-     * @param {string|Parser} langs
+     * @param {string|Parser} parsers
      * @returns {Parser}
      */
-    seq = (...langs) => langs.reduce((acc, lang) => Seq(normalize(acc), normalize(lang))),
+    seq = (...parsers) => parsers.reduce((acc, parser) => Seq(normalize(acc), normalize(parser))),
     /**
      * P* - Represents the zero or more repetitions of a parser.
-     * @param {string|Parser} lang
+     * @param {string|Parser} parser
      * @returns {Parser}
      */
-    star = (lang) => Star(normalize(lang)),
+    star = (parser) => Star(normalize(parser)),
     /**
      * "token" - Represents a token.
      * @param {string} value

@@ -1,46 +1,13 @@
 import {
     alt, any, char, empty, nil, not, opt, plus, range, rep, seq, star, token,
-    containsEmpty, deriv, equals, height, isAlt, isAny, isSeq, isChar, isEmpty, isNil,
-    isNot, isRange, isRep, isStar, isToken, matches, simplify, toString
+    deriv, equals, height, isAlt, isAny, isSeq, isChar, isEmpty, isNil,
+    isNot, isRange, isRep, isStar, isToken, simplify, toString,
+    Parser
 } from '../index.mjs'
 
+const { Nullability, Reduction, EmptyReduction } = Parser
+
 describe('Parser', () => {
-    test('containsEmpty', () => {
-        expect(containsEmpty(alt('a', 'b'))).toBe(false)
-        expect(containsEmpty(alt('a', empty))).toBe(true)
-        expect(containsEmpty(alt(empty, 'a'))).toBe(true)
-
-        expect(containsEmpty(any)).toBe(true)
-
-        expect(containsEmpty(char('a'))).toBe(false)
-        expect(containsEmpty(empty)).toBe(true)
-        expect(containsEmpty(nil)).toBe(false)
-
-        expect(containsEmpty(not('a'))).toBe(true)
-        expect(containsEmpty(not(star('a')))).toBe(false)
-        expect(containsEmpty(not(any))).toBe(false)
-        expect(containsEmpty(not(empty))).toBe(false)
-
-        expect(containsEmpty(opt('a'))).toBe(true)
-        expect(containsEmpty(opt(empty))).toBe(true)
-
-        expect(containsEmpty(plus('a'))).toBe(false)
-        expect(containsEmpty(plus(empty))).toBe(true)
-
-        expect(containsEmpty(range('a', 'b'))).toBe(false)
-
-        expect(containsEmpty(rep('a', 0))).toBe(true)
-        expect(containsEmpty(rep('a', 1))).toBe(false)
-
-        expect(containsEmpty(seq('a', 'b'))).toBe(false)
-        expect(containsEmpty(seq(empty, empty))).toBe(true)
-        expect(containsEmpty(seq(star('a'), empty))).toBe(true)
-        expect(containsEmpty(seq(empty, any))).toBe(true)
-
-        expect(containsEmpty(star('a'))).toBe(true)
-
-        expect(containsEmpty(token('abc'))).toBe(false)
-    })
     test('deriv alt', () => {
         // Dc(P1 ∪ P2) = Dc(P1) ∪ Dc(P2)
         expect(
@@ -69,34 +36,24 @@ describe('Parser', () => {
         ).toBe(true)
     })
     test('deriv seq', () => {
-        // Dc(P1◦P2) =  Dc(P1)◦P2           if ε ∉ P1
-        //           =  Dc(P1)◦P2 ∪ Dc(P2)  if ε ∈ P1
-
-        // Dc(P1◦P2) =  Dc(P1)◦P2
-        const ab = seq('a', 'b')
-        expect(
-            equals(deriv(ab, 'a'), seq(deriv(char('a'), 'a'), 'b'))
-        ).toBe(true)
-        expect(
-            equals(deriv(ab, 'b'), seq(deriv(char('a'), 'b'), 'b'))
-        ).toBe(true)
-        expect(
-            equals(deriv(ab, 'c'), seq(deriv(char('a'), 'c'), 'b'))
-        ).toBe(true)
-        // Dc(P1◦P2) =  Dc(P1)◦P2 ∪ Dc(P2)
-        const eb = seq(empty, 'b')
-        expect(
-            equals(deriv(eb, 'a'),
-                alt(seq(deriv(empty, 'a'), 'b'), deriv(char('b'), 'a'))
+        // Dc(P◦Q) = Dc(P)◦Q ∪ δ(P)◦Dc(Q)
+        const P = char('a'),
+            Q = char('b'),
+            PQ = seq('a', 'b'),
+            derivAb = alt(
+                seq(deriv(P, 'a'), Q),
+                seq(Nullability(P), deriv(Q, 'a'))
             )
+        expect(
+            equals(deriv(PQ, 'a'), derivAb)
         ).toBe(true)
     })
     test('deriv char', () => {
-        // Dc(c) = ε
-        expect(
-            equals(deriv(char('a'), 'a'), empty)
-        ).toBe(true)
+        // Dc(c) = ε ↓ {c}
         // Dc(c') = ∅
+        expect(
+            equals(deriv(char('a'), 'a'), EmptyReduction(new Set(['a'])))
+        ).toBe(true)
         expect(
             equals(deriv(char('a'), 'b'), nil)
         ).toBe(true)
@@ -132,9 +89,9 @@ describe('Parser', () => {
     })
     test('deriv plus', () => {
         const P = char('a')
-        // Dc(P+) = Dc(P)◦P*
+        // Dc(P+) = Dc(P◦P*)
         expect(
-            equals(deriv(plus(P), 'a'), seq(deriv(P, 'a'), star(P)))
+            equals(deriv(plus(P), 'a'), deriv(seq(P, star(P)), 'a'))
         ).toBe(true)
     })
     test('deriv range', () => {
@@ -172,10 +129,16 @@ describe('Parser', () => {
         ).toBe(true)
     })
     test('deriv star', () => {
+        // Dc(P*) = Dc(P)◦P* → λ(h, t).h ++ t
         const P = char('a')
-        // Dc(P*) = Dc(P)◦P*
         expect(
-            equals(deriv(star(P), 'a'), seq(deriv(P, 'a'), star(P)))
+            equals(
+                deriv(star(P), 'a'),
+                Reduction(
+                    seq(deriv(P, 'a'), star(P)),
+                    () => (h, t) => [h, ...t]
+                )
+            )
         ).toBe(true)
     })
     test('deriv token', () => {
@@ -441,76 +404,6 @@ describe('Parser', () => {
         expect(isToken(star('a'))).toBe(false)
         expect(isToken(token('abc'))).toBe(true)
     })
-    test('matches', () => {
-        // a|b matches "a"
-        expect(matches(alt('a', 'b'), 'a')).toBe(true)
-        // a|b matches "b"
-        expect(matches(alt('a', 'b'), 'b')).toBe(true)
-        // a|b does not match "c"
-        expect(matches(alt('a', 'b'), 'c')).toBe(false)
-        // . matches "a"
-        expect(matches(any, 'a')).toBe(true)
-        // a◦b matches "ab"
-        expect(matches(seq('a', 'b'), 'ab')).toBe(true)
-        // a◦b does not match "a"
-        expect(matches(seq('a', 'b'), 'a')).toBe(false)
-        // a matches "a"
-        expect(matches(char('a'), 'a')).toBe(true)
-        // a does not match "b"
-        expect(matches(char('a'), 'b')).toBe(false)
-        // ε matches ""
-        expect(matches(empty, '')).toBe(true)
-        // ε does not match "a"
-        expect(matches(empty, 'a')).toBe(false)
-        // ∅ does not match "b"
-        expect(matches(nil, 'b')).toBe(false)
-        // ∅ does not match "a"
-        expect(matches(nil, 'a')).toBe(false)
-        // ¬a does not match "a"
-        expect(matches(not('a'), 'a')).toBe(false)
-        // a+ matches "a"
-        expect(matches(plus('a'), 'a')).toBe(true)
-        // a+ matches "aa"
-        expect(matches(plus('a'), 'aa')).toBe(true)
-        // a+ does not match ""
-        expect(matches(plus('a'), '')).toBe(false)
-        // a? matches ""
-        expect(matches(opt('a'), '')).toBe(true)
-        // a? matches "a"
-        expect(matches(opt('a'), 'a')).toBe(true)
-        // a? does not match "b"
-        expect(matches(opt('a'), 'b')).toBe(false)
-        // ¬a matches "b"
-        expect(matches(not('a'), 'b')).toBe(true)
-        // [a-b] matches "a"
-        expect(matches(range('a', 'b'), 'a')).toBe(true)
-        // [a-b] matches "b"
-        expect(matches(range('a', 'b'), 'b')).toBe(true)
-        // [a-b] does not match "c"
-        expect(matches(range('a', 'b'), 'c')).toBe(false)
-        // a{0} matches ""
-        expect(matches(rep('a', 0), '')).toBe(true)
-        // a{0} does not match "a"
-        expect(matches(rep('a', 0), 'a')).toBe(false)
-        // a{1} matches "a"
-        expect(matches(rep('a', 1), 'a')).toBe(true)
-        // a{1} does not match "aa"
-        expect(matches(rep('a', 1), 'aa')).toBe(false)
-        // a{2} matches "aa"
-        expect(matches(rep('a', 2), 'aa')).toBe(true)
-        // a{1} does not match "a"
-        expect(matches(rep('a', 0), 'a')).toBe(false)
-        // a* matches ""
-        expect(matches(star('a'), '')).toBe(true)
-        // a* matches "a"
-        expect(matches(star('a'), 'a')).toBe(true)
-        // a* matches "aa"
-        expect(matches(star('a'), 'aa')).toBe(true)
-        // "abc" matches "abc"
-        expect(matches(token('abc'), 'abc')).toBe(true)
-        // "abc" does not match "ab"
-        expect(matches(token('abc'), 'ab')).toBe(false)
-    })
     test('simplify', () => {
         // P ∪ P → P
         expect(equals(simplify(alt('a', 'a')), char('a'))).toBe(true)
@@ -583,44 +476,5 @@ describe('Parser', () => {
         expect(toString(rep('a', 2))).toBe('Rep(Char(a), 2)')
         expect(toString(star('a'))).toBe('Star(Char(a))')
         expect(toString(token('Foo'))).toBe('Token(Foo)')
-    })
-    test('hex matching', () => {
-        // match 6 digit hex
-        const hex = alt(
-            range('0', '9'),
-            range('a', 'f')
-        ),
-            hex6 = rep(hex, 6)
-        expect(matches(hex6, '123456')).toBe(true)
-        expect(matches(hex6, 'abcdef')).toBe(true)
-        expect(matches(hex6, '123abc')).toBe(true)
-        expect(matches(hex6, 'abc123')).toBe(true)
-        expect(matches(hex6, 'cafebabe')).toBe(false)
-        expect(matches(hex6, 'deadbeef')).toBe(false)
-        expect(matches(hex6, '12345')).toBe(false)
-        expect(matches(hex6, '1234567')).toBe(false)
-        expect(matches(hex6, '12345g')).toBe(false)
-    })
-    test('zip matching', () => {
-        // match 5 digit zip
-        const digit = range('0', '9'),
-            zip = seq(rep(digit, 5), '-', rep(digit, 4))
-
-        expect(matches(zip, '12345-1234')).toBe(true)
-        expect(matches(zip, '12345-123')).toBe(false)
-        expect(matches(zip, '1234-1234')).toBe(false)
-        expect(matches(zip, '12345-12345')).toBe(false)
-    })
-    test('credit card matching', () => {
-        // match 16 digit credit card
-        const digit = range('0', '9'),
-            digit4 = rep(digit, 4),
-            component = seq(digit4, '-'),
-            card = seq(rep(component, 3), digit4)
-
-        expect(matches(card, '1234-1234-1234-1234')).toBe(true)
-        expect(matches(card, '1234-1234-1234-123')).toBe(false)
-        expect(matches(card, '1234-1234-1234-12345')).toBe(false)
-        expect(matches(card, '1234-1234-1234-1234-1234')).toBe(false)
     })
 })
